@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.tastybites.almhult" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+    <name>Tasty Bites</name>
+    <description>Authentic Indian Food — Älmhult, Sweden</description>
+    <author email="prabu.pd@gmail.com" href="https://tastybites-almhult.vercel.app">Tasty Bites</author>
+
+    <!-- Load the live web app directly -->
+    <content src="https://tastybites-almhult.vercel.app" />
+
+    <!-- Allow all navigation and network requests -->
+    <access origin="*" />
+    <allow-navigation href="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="https://wa.me/*" />
+
+    <preference name="loglevel" value="DEBUG" />
+
+    <!-- WebView / UX settings -->
+    <preference name="AllowInlineMediaPlayback" value="true" />
+    <preference name="MediaPlaybackRequiresUserAction" value="false" />
+    <preference name="KeyboardDisplayRequiresUserAction" value="false" />
+    <preference name="DisallowOverscroll" value="false" />
+    <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="SplashScreenDelay" value="1000" />
+    <preference name="FadeSplashScreen" value="true" />
+
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="android-minSdkVersion" value="22" />
+        <preference name="android-targetSdkVersion" value="34" />
+        <preference name="Orientation" value="portrait" />
+        <preference name="MixedContentMode" value="0" />
+    </platform>
+
+    <engine name="android" spec="^13.0.0" />
+    <plugin name="cordova-plugin-whitelist" spec="*" />
+    <plugin name="cordova-plugin-inappbrowser" spec="*" />
+
+</widget>
