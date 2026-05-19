@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MenuType {
+  DAILY
+  FRIDAY
+  BOTH
+}
+
+enum SpiceLevel {
+  MILD
+  MEDIUM
+  HOT
+  EXTRA_HOT
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  SWISH
+  CASH
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+model Dish {
+  id            String      @id @default(uuid())
+  name          String      @unique
+  description   String
+  ingredients   String
+  ingredientsSv String
+  pieces        Int?
+  price         Decimal     @db.Decimal(10, 2)
+  imageUrl      String?
+  isAvailable   Boolean     @default(true)
+  menuType      MenuType    @default(DAILY)
+  isVegetarian  Boolean     @default(false)
+  spiceLevel    SpiceLevel  @default(MEDIUM)
+  category      String      @default("Other")
+  deletedAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+
+  @@index([menuType])
+  @@index([isAvailable])
+  @@index([category])
+  @@index([deletedAt])
+  @@map("dishes")
+}
+
+model Order {
+  id             String        @id @default(uuid())
+  customerName   String
+  mobileNumber   String
+  totalAmount    Decimal       @db.Decimal(10, 2)
+  paymentMethod  PaymentMethod
+  status         OrderStatus   @default(PENDING)
+  pickupMessage  String?
+  notes          String?
+  orderDate      DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  orderItems     OrderItem[]
+
+  @@index([mobileNumber])
+  @@index([orderDate])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id       String  @id @default(uuid())
+  orderId  String
+  dishId   String
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dish     Dish    @relation(fields: [dishId], references: [id])
+
+  @@index([orderId])
+  @@index([dishId])
+  @@map("order_items")
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model PickupMessage {
+  id        String   @id @default(uuid())
+  message   String
+  messageSv String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pickup_messages")
+}

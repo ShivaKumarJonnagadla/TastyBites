@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+
+# Prisma generated (auto-generated at build time)
+prisma/migrations/
+
+# Test coverage
+coverage/
+
+# IDE
+.idea/
+.vscode/settings.json

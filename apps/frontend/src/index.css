@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #C2185B;
+    --color-secondary: #e91e8a;
+    --color-accent: #f48fb4;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-gray-900 bg-white antialiased;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  img {
+    @apply max-w-full;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold
+           bg-spice-500 text-white hover:bg-spice-600 active:bg-spice-700
+           transition-all duration-200 shadow-warm hover:shadow-warm-lg
+           focus:outline-none focus:ring-2 focus:ring-spice-500 focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold
+           border-2 border-spice-500 text-spice-500 hover:bg-spice-50
+           transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-spice-500 focus:ring-offset-2;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium
+           text-gray-600 hover:text-gray-900 hover:bg-gray-100
+           transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-card overflow-hidden
+           transition-all duration-300 hover:shadow-card-hover;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-display font-bold text-gray-900 mb-2;
+  }
+
+  .section-subtitle {
+    @apply text-gray-500 text-lg mb-8;
+  }
+
+  .badge-veg {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-green-100 text-green-700 border border-green-200;
+  }
+
+  .badge-nonveg {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium
+           bg-red-100 text-red-700 border border-red-200;
+  }
+
+  .skeleton {
+    @apply bg-gray-200 rounded animate-pulse;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-spice-500 to-saffron-500 bg-clip-text text-transparent;
+  }
+
+  .floating-cart {
+    @apply fixed bottom-6 right-6 z-50 flex items-center justify-center
+           w-16 h-16 rounded-full bg-spice-500 text-white shadow-warm-lg
+           hover:bg-spice-600 transition-all duration-300 hover:scale-110
+           focus:outline-none focus:ring-2 focus:ring-spice-500 focus:ring-offset-2;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 bg-white
+           focus:outline-none focus:ring-2 focus:ring-spice-500 focus:border-transparent
+           placeholder:text-gray-400 text-gray-900 transition-all duration-200;
+  }
+
+  .spice-badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .pattern-dots {
+    background-image: radial-gradient(circle, #E8521A20 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}

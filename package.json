@@ -1,0 +1,27 @@
+{
+  "name": "tastybites",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=apps/backend\" \"npm run dev --workspace=apps/frontend\"",
+    "build": "npm run build --workspace=packages/shared && npm run build --workspace=apps/backend && npm run build --workspace=apps/frontend",
+    "lint": "npm run lint --workspaces",
+    "db:generate": "npm run db:generate --workspace=apps/backend",
+    "db:push": "npm run db:push --workspace=apps/backend",
+    "db:migrate": "npm run db:migrate --workspace=apps/backend",
+    "db:seed": "npm run db:seed --workspace=apps/backend",
+    "db:studio": "npm run db:studio --workspace=apps/backend"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^6.0.3"
+  }
+}

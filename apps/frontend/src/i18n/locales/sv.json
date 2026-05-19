@@ -1,0 +1,98 @@
+{
+  "nav": {
+    "home": "Hem",
+    "menu": "Meny",
+    "about": "Om oss",
+    "contact": "Kontakt",
+    "cart": "Varukorg",
+    "admin": "Admin"
+  },
+  "hero": {
+    "tagline": "Äkta Indisk Mat",
+    "subtitle": "Mumsig hemlagad indisk mat",
+    "cta": "Beställ Nu",
+    "browseMenu": "Se Menyn"
+  },
+  "menu": {
+    "daily": "Daglig Meny",
+    "friday": "Fredagsspecial",
+    "search": "Sök rätter...",
+    "filter": "Filtrera",
+    "allCategories": "Alla Kategorier",
+    "vegetarian": "Vegetarisk",
+    "nonVegetarian": "Icke-vegetarisk",
+    "addToCart": "Lägg i varukorg",
+    "pieces": "st",
+    "noResults": "Inga rätter hittades",
+    "emptyState": "Tack för ditt besök. Nya rätter kommer snart.",
+    "spiceLevel": "Kryddnivå"
+  },
+  "cart": {
+    "title": "Din Varukorg",
+    "empty": "Din varukorg är tom",
+    "total": "Totalt",
+    "checkout": "Gå till kassan",
+    "continue": "Fortsätt handla",
+    "remove": "Ta bort",
+    "quantity": "Antal"
+  },
+  "checkout": {
+    "title": "Kassa",
+    "name": "Fullständigt namn",
+    "mobile": "Mobilnummer",
+    "payment": "Betalningsmetod",
+    "swish": "Swish",
+    "cash": "Kontant",
+    "swishInstructions": "Skanna QR-koden nedan för att betala via Swish",
+    "orderSummary": "Ordersammanfattning",
+    "placeOrder": "Lägg beställning",
+    "processing": "Bearbetar...",
+    "notes": "Särskilda önskemål (valfritt)"
+  },
+  "confirmation": {
+    "title": "Beställning lagd! 🎉",
+    "subtitle": "Tack för din beställning!",
+    "pickup": "Upphämtningsinstruktioner",
+    "orderNumber": "Orderreferens"
+  },
+  "common": {
+    "sek": "SEK",
+    "loading": "Laddar...",
+    "error": "Något gick fel",
+    "retry": "Försök igen",
+    "close": "Stäng",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "add": "Lägg till",
+    "yes": "Ja",
+    "no": "Nej"
+  },
+  "footer": {
+    "tagline": "Gjord med kärlek för indiska och svenska matälskare",
+    "rights": "Alla rättigheter förbehållna",
+    "privacy": "Integritetspolicy",
+    "contact": "Kontakta oss"
+  },
+  "faq": {
+    "title": "Vanliga frågor",
+    "q1": "Hur beställer jag?",
+    "a1": "Bläddra i vår meny, lägg varor i varukorgen och gå till kassan. Ange ditt namn och mobilnummer, välj betalningsmetod och bekräfta din beställning.",
+    "q2": "Hur betalar jag?",
+    "a2": "Vi accepterar Swish (skanna QR-koden) och kontanter. Betala när du hämtar din mat.",
+    "q3": "Var hämtar jag min beställning?",
+    "a3": "Upphämtningsplats och tid delas i din orderbekräftelse. Vi finns i Malmö, Sverige.",
+    "q4": "Är maten halal?",
+    "a4": "Ja! Alla våra kötträtter tillagas med halal-certifierade ingredienser.",
+    "q5": "Har ni vegetariska alternativ?",
+    "a5": "Absolut! Vi har ett brett utbud av läckra vegetariska rätter. Se efter det gröna bladikonen.",
+    "q6": "Kan jag ändra min beställning?",
+    "a6": "Kontakta oss omedelbart via WhatsApp om du behöver ändra din beställning innan den tillagas."
+  },
+  "gdpr": {
+    "message": "Vi respekterar din integritet. Vi lagrar endast orderrelaterad information som krävs för matleverans och upphämtning.",
+    "accept": "Acceptera",
+    "decline": "Avböj"
+  }
+}
