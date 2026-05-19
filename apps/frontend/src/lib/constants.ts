@@ -1,6 +1,5 @@
 export const DISH_CATEGORIES = [
-  'Biryani', 'Curry', 'Snacks', 'Bread', 'Rice',
-  'Dessert', 'Drinks', 'Thali', 'Starter', 'Side Dish',
+  'Specialities', 'Starters', 'Breakfast', 'Rice', 'Drinks', 'Snacks',
 ] as const;
 
 export const GREETING_MESSAGES = {

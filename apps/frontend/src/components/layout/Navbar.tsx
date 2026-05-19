@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Globe } from 'lucide-react';
+import { Menu, X, ShoppingCart, Globe, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../../store/cartStore';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showStory, setShowStory] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { totalItems, openCart } = useCartStore();
   const itemCount = totalItems();
 
@@ -26,15 +29,42 @@ export default function Navbar() {
   const toggleLang = () => i18n.changeLanguage(i18n.language === 'en' ? 'sv' : 'en');
   const isEnglish = i18n.language === 'en';
 
+  const scrollToSection = (id: string) => {
+    setIsOpen(false);
+    if (location.pathname === '/') {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
+  const openStory = () => {
+    setIsOpen(false);
+    setShowStory(true);
+  };
+
+  const closeStory = () => {
+    setShowStory(false);
+    videoRef.current?.pause();
+  };
+
   const navLinks = [
-    { to: '/', label: t('nav.home') },
-    { to: '/menu', label: t('nav.menu') },
+    { to: '/', label: t('nav.home'), hash: null, action: null },
+    { to: '/menu', label: t('nav.menu'), hash: null, action: null },
+    { to: '/#friday-menu', label: t('nav.fridayMenu'), hash: 'friday-menu', action: null },
+    { to: '/#reviews', label: t('nav.reviews'), hash: 'reviews', action: null },
+    { to: '/#faq', label: t('nav.faq'), hash: 'faq', action: null },
+    { to: '/#contact', label: t('nav.contact'), hash: 'contact', action: null },
+    { to: '#our-story', label: t('nav.ourStory'), hash: null, action: openStory },
   ];
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-md' : 'bg-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white ${
+        scrolled ? 'shadow-md' : 'shadow-sm border-b border-gray-100'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,23 +95,49 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
+            {navLinks.map((link) => {
+              const isActive = link.hash ? false : (!link.action && location.pathname === link.to);
+              if (link.action) {
+                return (
+                  <button
+                    key={link.to}
+                    onClick={link.action}
+                    className="flex items-center gap-1.5 text-sm font-medium transition-colors duration-200 text-spice-600 hover:text-spice-700"
+                  >
+                    <Play size={13} className="fill-current" />
+                    {link.label}
+                  </button>
+                );
+              }
+              if (link.hash) {
+                return (
+                  <button
+                    key={link.to}
+                    onClick={() => scrollToSection(link.hash!)}
+                    className="text-sm font-medium transition-colors duration-200 text-gray-700 hover:text-spice-500"
+                  >
+                    {link.label}
+                  </button>
+                );
+              }
+              return (
               <Link
                 key={link.to}
                 to={link.to}
                 className={`text-sm font-medium transition-colors duration-200 relative group ${
-                  location.pathname === link.to ? 'text-spice-500' : 'text-gray-700 hover:text-spice-500'
+                  isActive ? 'text-spice-500' : 'text-gray-700 hover:text-spice-500'
                 }`}
               >
                 {link.label}
-                {location.pathname === link.to && (
+                {isActive && (
                   <motion.div
                     layoutId="navbar-indicator"
                     className="absolute -bottom-1 left-0 right-0 h-0.5 bg-spice-500 rounded-full"
                   />
                 )}
               </Link>
-            ))}
+              );
+            })}
           </div>
 
           {/* Actions */}
@@ -138,20 +194,82 @@ export default function Navbar() {
             className="md:hidden bg-white border-t border-gray-100 shadow-lg"
           >
             <div className="px-4 py-4 space-y-1">
-              {navLinks.map((link) => (
+              {navLinks.map((link) => {
+                const isActive = link.hash ? false : (!link.action && location.pathname === link.to);
+                if (link.action) {
+                  return (
+                    <button
+                      key={link.to}
+                      onClick={link.action}
+                      className="flex items-center gap-2 w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors text-spice-600 hover:bg-spice-50"
+                    >
+                      <Play size={13} className="fill-current" />
+                      {link.label}
+                    </button>
+                  );
+                }
+                if (link.hash) {
+                  return (
+                    <button
+                      key={link.to}
+                      onClick={() => scrollToSection(link.hash!)}
+                      className="block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors text-gray-700 hover:bg-gray-50"
+                    >
+                      {link.label}
+                    </button>
+                  );
+                }
+                return (
                 <Link
                   key={link.to}
                   to={link.to}
                   className={`block px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    location.pathname === link.to
+                    isActive
                       ? 'bg-spice-50 text-spice-500'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   {link.label}
                 </Link>
-              ))}
+                );
+              })}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Our Story Video Modal */}
+      <AnimatePresence>
+        {showStory && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 p-4"
+            onClick={closeStory}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeStory}
+                className="absolute top-3 right-3 z-10 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
+                aria-label="Close video"
+              >
+                <X size={20} />
+              </button>
+              <video
+                ref={videoRef}
+                src="/our-story.mp4"
+                controls
+                autoPlay
+                className="w-full max-h-[80vh] bg-black"
+              />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

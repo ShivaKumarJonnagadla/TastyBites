@@ -24,10 +24,51 @@ interface Dish {
 }
 
 const testimonials = [
-  { name: 'Vijaya Venkatesan', text: 'Ordered biryani and it was excellent! Exactly the taste of home cooked food. Will definitely order again.', rating: 5, avatar: '👩🏽' },
-  { name: 'Ashok Kumar', text: 'Authentic South Indian taste. The food was fresh, flavorful and reminded me of home. Great service!', rating: 5, avatar: '👨🏽' },
-  { name: 'Priya Sundaram', text: 'Amazing food! The Chettinadu fish curry was outstanding. So happy to find authentic Indian food here in Älmhult!', rating: 5, avatar: '👩🏽' },
-  { name: 'Rajesh Narayanan', text: 'Best Indian food in Älmhult. The biryani and curries are just like back home. Highly recommended!', rating: 5, avatar: '👨🏽' },
+  {
+    name: 'Aaliya Badar Ahamed',
+    text: 'Älmhult Kalaset 2025 witnessed the arrival of a new star in town — Tasty Bites! The Dindigul Chicken Biryani had killer flavors with a lovely piece of chicken leg oozing with rich spices. The Pepper Chicken Masala was a whole other high, and the Rasmalai knocked it out of the park! This is a home away from home vibe. Highly recommend! 🤩',
+    rating: 5,
+    avatar: 'A',
+    date: '8 months ago',
+    badge: 'Local Guide · 27 reviews',
+    tags: 'Food: 5/5  |  Service: 5/5  |  Atmosphere: 5/5',
+  },
+  {
+    name: 'Sheik Zayed',
+    text: 'Finding Indian food in Sweden is like finding the Titanic diamond in the ocean, but you wouldn\'t believe I found one 😁 I\'ve tried many places, but Tastybites is the only spot that truly delivers authentic flavors of India.',
+    rating: 5,
+    avatar: 'S',
+    date: '7 months ago',
+    badge: 'Local Guide · 18 reviews',
+    tags: '',
+  },
+  {
+    name: 'Prakash',
+    text: 'I recently ordered Paneer Tikka Masala and Veg Biryani from Tasty Bites, and I was thoroughly impressed. The Paneer Tikka Masala was rich, creamy, and perfectly spiced with soft paneer. Absolutely delicious!',
+    rating: 5,
+    avatar: 'P',
+    date: '8 months ago',
+    badge: '2 reviews',
+    tags: '',
+  },
+  {
+    name: 'Nikhil BG',
+    text: 'One of the best Indian food I ever had in Sweden. The moment I took my first bite, it reminded me of home. People are also very sweet and helpful and nice. Highly recommended! It is worth it.',
+    rating: 5,
+    avatar: 'N',
+    date: '6 months ago',
+    badge: '1 review',
+    tags: 'Lunch  |  kr 1–100',
+  },
+  {
+    name: 'balaji jayaraman',
+    text: 'Dindigul chicken biryani was really amazing :) Must try for someone visiting Älmhult.',
+    rating: 5,
+    avatar: 'B',
+    date: 'a week ago',
+    badge: '2 reviews',
+    tags: 'Food: 5/5  |  Service: 5/5  |  Atmosphere: 5/5',
+  },
 ];
 
 const faqs = [
@@ -41,7 +82,7 @@ const faqs = [
 
 export default function HomePage() {
   const { t, i18n } = useTranslation();
-  const [dailyDishes, setDailyDishes] = useState<Dish[]>([]);
+  const [allDishes, setAllDishes] = useState<Dish[]>([]);
   const [fridayDishes, setFridayDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState('');
@@ -64,11 +105,15 @@ export default function HomePage() {
     const fetchDishes = async () => {
       try {
         setLoading(true);
-        const [dailyRes, fridayRes] = await Promise.all([
+        const [allRes, fridayRes] = await Promise.all([
           dishApi.getAll({ menuType: 'DAILY', isAvailable: 'true' }),
           dishApi.getAll({ menuType: 'FRIDAY', isAvailable: 'true' }),
         ]);
-        setDailyDishes(dailyRes.data.data || []);
+        setAllDishes((allRes.data.data || []).sort((a: Dish, b: Dish) => {
+          const aSpec = a.category === 'Specialities' ? 0 : 1;
+          const bSpec = b.category === 'Specialities' ? 0 : 1;
+          return aSpec - bSpec;
+        }));
         setFridayDishes(fridayRes.data.data || []);
       } catch {
         // Show empty state on error
@@ -191,7 +236,7 @@ export default function HomePage() {
       </section>
 
       {/* Welcome Banner */}
-      <section className="bg-turmeric-50 border-y border-turmeric-100">
+      <section className="bg-pink-50 border-y border-pink-100">
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -211,7 +256,7 @@ export default function HomePage() {
               ✨ One bite and you'll feel like you're in India!
             </p>
             <div className="flex flex-wrap items-center justify-center gap-6 mb-6">
-              {[['🥘', 'Home-cooked'], ['🌶️', 'Authentic Spices'], ['💚', 'Halal Certified'], ['📦', 'Pickup & Delivery'], ['🎉', 'Party Orders']].map(([emoji, label]) => (
+              {[['🥘', 'Home-cooked'], ['🌶️', 'Authentic Spices'], ['💚', 'Halal Certified'], ['�', '1 Day Advance'], ['🎉', 'Party Orders']].map(([emoji, label]) => (
                 <div key={label} className="text-center">
                   <div className="text-2xl mb-1">{emoji}</div>
                   <p className="text-xs font-medium text-gray-600">{label}</p>
@@ -226,17 +271,41 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Daily Menu */}
+      {/* Cloud Kitchen Info Banner */}
+      <section className="bg-white border-y border-pink-200">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 justify-center text-center sm:text-left"
+          >
+            <span className="text-4xl">📦</span>
+            <div>
+              <p className="font-bold text-gray-900 text-base mb-1">We are a Cloud Kitchen — Pickup &amp; Delivery only, no dine-in.</p>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                We can prepare any dish on any day with <span className="font-semibold text-spice-600">1 day advance notice</span>.
+                Minimum order is <span className="font-semibold text-spice-600">2 portions per dish</span>.
+                WhatsApp us at{' '}
+                <a href="https://wa.me/46769677497" className="text-spice-500 font-semibold hover:underline">+46 769677497</a>{' '}
+                to place your order.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* All Dishes */}
       <MenuSection
-        title={t('menu.daily')}
-        subtitle="Fresh dishes available every day"
-        dishes={dailyDishes}
+        title="All Dishes"
+        subtitle="Available any day — order 1 day in advance · min. 2 portions per dish"
+        dishes={allDishes}
         isLoading={loading}
-        emoji="☀️"
+        emoji="🍽️"
       />
 
-      {/* Friday Menu */}
-      <div className="bg-gradient-to-b from-amber-50 to-white">
+      {/* Friday Special */}
+      <div id="friday-menu" className="bg-gradient-to-b from-pink-100 to-pink-50">
         <MenuSection
           title={t('menu.friday')}
           subtitle="Special dishes available every Friday"
@@ -247,7 +316,7 @@ export default function HomePage() {
       </div>
 
       {/* Testimonials */}
-      <section className="py-16 bg-gray-50">
+      <section id="reviews" className="py-16 bg-pink-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -256,30 +325,70 @@ export default function HomePage() {
             className="text-center mb-10"
           >
             <h2 className="section-title">What Our Customers Say</h2>
-            <p className="section-subtitle">Loved by Indian and Swedish food lovers alike</p>
+            <p className="section-subtitle">Reviews from our valued customers on Google</p>
+
+            {/* Google Rating Badge */}
+            <div className="inline-flex items-center gap-3 mt-6 bg-white border border-gray-200 rounded-2xl px-6 py-3 shadow-sm">
+              <img
+                src="https://www.google.com/favicon.ico"
+                alt="Google"
+                className="w-5 h-5"
+              />
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-gray-900">5.0</span>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={16} className="text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-500 font-medium">on Google</span>
+              </div>
+              <a
+                href="https://www.google.com/search?q=Tasty+Bites+%C3%84lmhult+Reviews"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-spice-500 font-semibold hover:underline ml-1"
+              >
+                View all →
+              </a>
+            </div>
           </motion.div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {testimonials.map((t, i) => (
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {testimonials.map((review, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="card p-5"
+                transition={{ delay: i * 0.07 }}
+                className="card p-5 flex flex-col gap-3"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-3xl">{t.avatar}</span>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
-                    <div className="flex gap-0.5">
-                      {Array.from({ length: t.rating }).map((_, j) => (
-                        <Star key={j} size={12} className="text-turmeric-400 fill-current" />
-                      ))}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-spice-gradient flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {review.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm leading-tight">{review.name}</p>
+                      <p className="text-xs text-gray-400">{review.badge} · {review.date}</p>
                     </div>
                   </div>
+                  <img
+                    src="https://www.google.com/favicon.ico"
+                    alt="Google review"
+                    className="w-4 h-4 opacity-60"
+                  />
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed italic">"{t.text}"</p>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: review.rating }).map((_, j) => (
+                    <Star key={j} size={12} className="text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed italic flex-1">"{review.text}"</p>
+                {review.tags && (
+                  <p className="text-xs text-gray-400 border-t border-gray-100 pt-2">{review.tags}</p>
+                )}
               </motion.div>
             ))}
           </div>
@@ -287,7 +396,7 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16">
+      <section id="faq" className="py-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -369,7 +478,7 @@ export default function HomePage() {
       </section>
 
       {/* Hours & Contact */}
-      <section className="py-16 bg-gray-50">
+      <section id="contact" className="py-16 bg-pink-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

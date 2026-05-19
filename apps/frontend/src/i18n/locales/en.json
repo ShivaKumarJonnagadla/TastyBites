@@ -2,6 +2,11 @@
   "nav": {
     "home": "Home",
     "menu": "Menu",
+    "fridayMenu": "Friday Menu",
+    "reviews": "Reviews",
+    "faq": "FAQ",
+    "contact": "Contact Us",
+    "ourStory": "Our Story",
     "about": "About",
     "contact": "Contact",
     "cart": "Cart",

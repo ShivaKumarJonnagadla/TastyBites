@@ -2,6 +2,11 @@
   "nav": {
     "home": "Hem",
     "menu": "Meny",
+    "fridayMenu": "Fredagsmeny",
+    "ourStory": "Vår Historia",
+    "reviews": "Recensioner",
+    "faq": "FAQ",
+    "contact": "Kontakta oss",
     "about": "Om oss",
     "contact": "Kontakt",
     "cart": "Varukorg",

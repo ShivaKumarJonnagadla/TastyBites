@@ -14,7 +14,7 @@
   }
 
   body {
-    @apply font-sans text-gray-900 bg-white antialiased;
+    @apply font-sans text-gray-900 bg-pink-50 antialiased;
   }
 
   * {

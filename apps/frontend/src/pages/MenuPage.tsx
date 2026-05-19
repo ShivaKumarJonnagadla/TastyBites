@@ -20,7 +20,7 @@ interface Dish {
   category: string;
 }
 
-type Tab = 'all' | 'daily' | 'friday';
+type Tab = 'all' | 'friday';
 
 export default function MenuPage() {
   const { t } = useTranslation();
@@ -44,16 +44,18 @@ export default function MenuPage() {
 
   const tabs: { id: Tab; label: string; emoji: string }[] = [
     { id: 'all', label: 'All Dishes', emoji: '🍽️' },
-    { id: 'daily', label: t('menu.daily'), emoji: '☀️' },
     { id: 'friday', label: t('menu.friday'), emoji: '🎉' },
   ];
 
-  const filtered = dishes.filter((d) => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'daily') return d.menuType === 'DAILY' || d.menuType === 'BOTH';
-    if (activeTab === 'friday') return d.menuType === 'FRIDAY' || d.menuType === 'BOTH';
-    return true;
+  const sortedAll = [...dishes].sort((a, b) => {
+    const aSpec = a.category === 'Specialities' ? 0 : 1;
+    const bSpec = b.category === 'Specialities' ? 0 : 1;
+    return aSpec - bSpec;
   });
+
+  const filtered = activeTab === 'all'
+    ? sortedAll
+    : dishes.filter((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH');
 
   return (
     <div className="pt-16 min-h-screen">
@@ -95,11 +97,7 @@ export default function MenuPage() {
                   >
                     {tab.id === 'all'
                       ? dishes.length
-                      : dishes.filter((d) =>
-                          tab.id === 'daily'
-                            ? d.menuType === 'DAILY' || d.menuType === 'BOTH'
-                            : d.menuType === 'FRIDAY' || d.menuType === 'BOTH'
-                        ).length}
+                      : dishes.filter((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH').length}
                   </span>
                 )}
               </button>
