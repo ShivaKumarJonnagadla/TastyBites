@@ -28,12 +28,23 @@
     <preference name="SplashScreenDelay" value="1000" />
     <preference name="FadeSplashScreen" value="true" />
 
+    <!-- App icon -->
+    <icon src="res/icon/android/icon.png" />
+
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="android-minSdkVersion" value="22" />
         <preference name="android-targetSdkVersion" value="34" />
         <preference name="Orientation" value="portrait" />
         <preference name="MixedContentMode" value="0" />
+
+        <!-- Icons per density -->
+        <icon density="ldpi"    src="res/icon/android/mipmap-ldpi/ic_launcher.png" />
+        <icon density="mdpi"    src="res/icon/android/mipmap-mdpi/ic_launcher.png" />
+        <icon density="hdpi"    src="res/icon/android/mipmap-hdpi/ic_launcher.png" />
+        <icon density="xhdpi"   src="res/icon/android/mipmap-xhdpi/ic_launcher.png" />
+        <icon density="xxhdpi"  src="res/icon/android/mipmap-xxhdpi/ic_launcher.png" />
+        <icon density="xxxhdpi" src="res/icon/android/mipmap-xxxhdpi/ic_launcher.png" />
     </platform>
 
     <engine name="android" spec="^13.0.0" />
