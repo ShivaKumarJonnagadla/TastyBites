@@ -30,14 +30,26 @@ export default function Navbar() {
   const isEnglish = i18n.language === 'en';
 
   const scrollToSection = (id: string) => {
+    const wasOpen = isOpen;
     setIsOpen(false);
-    if (location.pathname === '/') {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    } else {
+
+    const doScroll = () => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const navbarHeight = 68;
+      const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: 'smooth' });
+    };
+
+    if (location.pathname !== '/') {
+      // Navigate to home first, then scroll after page loads
       navigate('/');
-      setTimeout(() => {
-        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
+      setTimeout(doScroll, 500);
+    } else if (wasOpen) {
+      // Wait for mobile menu close animation to finish before scrolling
+      setTimeout(doScroll, 350);
+    } else {
+      doScroll();
     }
   };
 
