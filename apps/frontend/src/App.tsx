@@ -7,6 +7,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import CartDrawer from './components/cart/CartDrawer';
 import CookieBanner from './components/ui/CookieBanner';
+import PWAInstallBanner from './components/PWAInstallBanner';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
@@ -32,6 +33,7 @@ function App() {
       />
       <CartDrawer />
       <CookieBanner />
+      <PWAInstallBanner />
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
           {/* Public routes */}
