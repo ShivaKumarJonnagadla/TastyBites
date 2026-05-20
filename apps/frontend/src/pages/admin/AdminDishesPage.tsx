@@ -64,6 +64,11 @@ const statusColors: Record<string, string> = {
 
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop';
 
+const DELIVERY_LOCATIONS = [
+  { id: 'kry', name: 'Kry Vårdcentral Älmhult Parkering', address: 'Gotthards gata 5, 343 36 Älmhult' },
+  { id: 'grillen', name: 'Grillen Parkering', address: 'Ikeagatan 2, 343 36 Älmhult' },
+];
+
 function getWeekNumber(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
@@ -89,6 +94,9 @@ export default function AdminDishesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkUpdating, setBulkUpdating] = useState(false);
   const [menuTypeFilter, setMenuTypeFilter] = useState<'ALL' | 'DAILY' | 'FRIDAY' | 'BOTH'>('ALL');
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [pdfLocationId, setPdfLocationId] = useState('kry');
+  const [pdfDeliveryTime, setPdfDeliveryTime] = useState('');
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -231,9 +239,10 @@ export default function AdminDishesPage() {
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = async (locationId: string, deliveryTime: string) => {
     const selectedDishes = dishes.filter((d) => selectedIds.has(d.id));
     if (selectedDishes.length === 0) return;
+    const loc = DELIVERY_LOCATIONS.find((l) => l.id === locationId) || DELIVERY_LOCATIONS[0];
 
     // Fetch logo and embed as base64 so it works reliably in the print window
     let logoSrc = '';
@@ -296,7 +305,8 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 /* HEADER */
 .header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:18px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
 .header-left{display:flex;align-items:center;gap:14px;}
-.logo-img{height:56px;width:auto;object-fit:contain;filter:brightness(0) invert(1);}
+.logo-wrap{background:rgba(255,255,255,0.92);border-radius:10px;padding:5px 10px;display:inline-flex;align-items:center;justify-content:center;}
+.logo-img{height:48px;width:auto;object-fit:contain;}
 .brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
 .tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
 .header-right{text-align:right;flex-shrink:0;}
@@ -343,7 +353,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 <body>
 <div class="header">
   <div class="header-left">
-    ${logoSrc ? `<img class="logo-img" src="${logoSrc}" alt="Tasty Bites" />` : ''}
+    ${logoSrc ? `<div class="logo-wrap"><img class="logo-img" src="${logoSrc}" alt="Tasty Bites" /></div>` : ''}
     <div>
       <div class="brand">Tasty Bites</div>
       <div class="tagline">Authentic Indian &middot; &Auml;lmhult, Sweden</div>
@@ -356,33 +366,36 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
   </div>
 </div>
 <div class="info-strip">
-  <span>&#9729;&#65039; <b>Cloud Kitchen</b> &mdash; Pickup &amp; Delivery only</span>
+  <span>&#128205; <b>${loc.name}</b> &mdash; ${loc.address}</span>
   <span class="info-sep">&bull;</span>
-  <span>&#128172; WhatsApp: <b>+46 769677497</b></span>
+  <span>&#128336; Delivery: <b>${deliveryTime}</b></span>
   <span class="info-sep">&bull;</span>
-  <span>&#127758; <b>tastybites.vercel.app</b></span>
+  <span>&#128172; <b>+46 769677497</b></span>
+  <span class="info-sep">&bull;</span>
+  <span>&#127758; tastybites-almhult.vercel.app</span>
 </div>
 <div class="dishes-grid">${dishCards}</div>
 <div class="footer">
   <div class="footer-grid">
     <div class="footer-col">
       <div class="footer-col-title">&#128203; How to Order Online</div>
-      <div class="footer-step"><span class="step-num">1</span><p>Visit <b>tastybites.vercel.app</b> and open <b>Friday Menu</b></p></div>
+      <div class="footer-step"><span class="step-num">1</span><p>Visit <b>tastybites-almhult.vercel.app</b> and open <b>Friday Menu</b></p></div>
       <div class="footer-step"><span class="step-num">2</span><p>Choose your dishes &amp; portions, then <b>place the order</b> directly on the site</p></div>
     </div>
     <div class="footer-divider"></div>
     <div class="footer-col">
       <div class="footer-col-title">&#128172; Order via WhatsApp</div>
-      <div class="footer-step"><span class="step-num">3</span><p>Send a message to <b>+46 769677497</b> with your dish selection &amp; preferred pickup or delivery time</p></div>
+      <div class="footer-step"><span class="step-num">3</span><p>Send a message to <b>+46 769677497</b> with your dish selection</p></div>
     </div>
     <div class="footer-divider"></div>
     <div class="footer-col">
-      <div class="footer-col-title">&#128179; Payment</div>
-      <div class="footer-pay-row">&#128241; <b>Swish</b> &nbsp;+46 769677497</div>
-      <div class="footer-pay-row">&#128181; <b>Cash</b> &nbsp;on pickup</div>
+      <div class="footer-col-title">&#128205; Delivery</div>
+      <div class="footer-pay-row" style="font-weight:600;">&#128205; ${loc.name}</div>
+      <div style="font-size:10px;color:#888;margin:2px 0 6px 20px;">${loc.address}</div>
+      <div class="footer-pay-row">&#128336; ${deliveryTime}</div>
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid #F2E4E8;">
-        <div class="footer-contact-row">&#128222; <b>+46 769677497</b></div>
-        <div class="footer-contact-row" style="font-size:10px;color:#aaa;">Cloud Kitchen &mdash; Pickup &amp; Delivery only</div>
+        <div class="footer-pay-row">&#128241; <b>Swish</b> &nbsp;+46 769677497</div>
+        <div class="footer-pay-row">&#128181; <b>Cash</b> &nbsp;on pickup</div>
       </div>
     </div>
   </div>
@@ -496,7 +509,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
               <XCircle size={14} /> Clear
             </button>
             <button
-              onClick={handleExportPDF}
+              onClick={() => setShowPDFModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-spice-500 text-white hover:bg-spice-600 transition-all shadow-sm"
               title="Export selected dishes as a printable Friday Menu PDF"
             >
@@ -785,6 +798,90 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* PDF Export Modal */}
+      <AnimatePresence>
+        {showPDFModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50"
+              onClick={() => setShowPDFModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl z-50 shadow-2xl overflow-hidden"
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-spice-50 flex items-center justify-center">
+                    <FileDown size={16} className="text-spice-500" />
+                  </div>
+                  <h2 className="text-base font-semibold text-gray-900">Export Friday Menu PDF</h2>
+                </div>
+                <button onClick={() => setShowPDFModal(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Location</label>
+                  <select
+                    value={pdfLocationId}
+                    onChange={(e) => setPdfLocationId(e.target.value)}
+                    className="input-field"
+                  >
+                    {DELIVERY_LOCATIONS.map((loc) => (
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1.5 ml-0.5">
+                    {DELIVERY_LOCATIONS.find((l) => l.id === pdfLocationId)?.address}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Time</label>
+                  <input
+                    type="text"
+                    value={pdfDeliveryTime}
+                    onChange={(e) => setPdfDeliveryTime(e.target.value)}
+                    placeholder="e.g. Friday 23 May · 12:00 – 14:00"
+                    className="input-field"
+                  />
+                </div>
+                <div className="flex items-center gap-2 bg-spice-50 rounded-xl p-3">
+                  <span className="text-xs text-spice-700">
+                    <strong>{selectedIds.size}</strong> dish{selectedIds.size !== 1 ? 'es' : ''} selected for this PDF
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+                <button
+                  onClick={() => setShowPDFModal(false)}
+                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!pdfDeliveryTime.trim()) return;
+                    setShowPDFModal(false);
+                    handleExportPDF(pdfLocationId, pdfDeliveryTime);
+                  }}
+                  disabled={!pdfDeliveryTime.trim()}
+                  className="flex items-center gap-2 px-5 py-2 bg-spice-500 text-white rounded-xl text-sm font-semibold hover:bg-spice-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <FileDown size={15} /> Generate PDF
+                </button>
+              </div>
             </motion.div>
           </>
         )}
