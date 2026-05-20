@@ -884,6 +884,41 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     <strong>{selectedIds.size}</strong> dish{selectedIds.size !== 1 ? 'es' : ''} selected for this PDF
                   </span>
                 </div>
+
+                {/* Export button — slides in after time is chosen */}
+                <AnimatePresence>
+                  {pdfDeliveryTime && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-xl border border-spice-200 bg-gradient-to-br from-spice-50 to-pink-50 p-4 space-y-3"
+                    >
+                      <div className="space-y-1">
+                        <p className="text-xs font-semibold text-spice-700 uppercase tracking-wide">Ready to export</p>
+                        <p className="text-sm font-medium text-gray-800">
+                          {DELIVERY_LOCATIONS.find((l) => l.id === pdfLocationId)?.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {DELIVERY_LOCATIONS.find((l) => l.id === pdfLocationId)?.address}
+                        </p>
+                        <p className="text-sm font-semibold text-spice-600 mt-1">
+                          🕐 {formatDeliveryTime(pdfDeliveryTime)}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setShowPDFModal(false);
+                          handleExportPDF(pdfLocationId, formatDeliveryTime(pdfDeliveryTime));
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-spice-500 hover:bg-spice-600 text-white rounded-xl font-semibold text-sm transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+                      >
+                        <FileDown size={16} /> Export Menu PDF
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
               <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
                 <button
@@ -891,17 +926,6 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                   className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
                 >
                   Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    if (!pdfDeliveryTime) return;
-                    setShowPDFModal(false);
-                    handleExportPDF(pdfLocationId, formatDeliveryTime(pdfDeliveryTime));
-                  }}
-                  disabled={!pdfDeliveryTime}
-                  className="flex items-center gap-2 px-5 py-2 bg-spice-500 text-white rounded-xl text-sm font-semibold hover:bg-spice-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >
-                  <FileDown size={15} /> Generate PDF
                 </button>
               </div>
             </motion.div>
