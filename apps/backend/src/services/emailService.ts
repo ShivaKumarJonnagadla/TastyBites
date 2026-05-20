@@ -1,8 +1,19 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { logger } from '../utils/logger';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.EMAIL_FROM || 'TastyBites <onboarding@resend.dev>';
+// Gmail SMTP transport — requires GMAIL_USER and GMAIL_APP_PASSWORD in env
+// Set up: Google Account → Security → 2-Step Verification → App Passwords
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER || 'tastybites.almhult@gmail.com',
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
+
+const FROM_NAME = 'Tasty Bites';
+const FROM_ADDRESS = process.env.GMAIL_USER || 'tastybites.almhult@gmail.com';
+const FROM = `${FROM_NAME} <${FROM_ADDRESS}>`;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
 const NOTIFY_EMAIL = 'gurulakshmi25@gmail.com';
 
@@ -126,29 +137,21 @@ export async function sendOrderConfirmationEmail(
   // Always notify admin
   if (ADMIN_EMAIL) {
     sends.push(
-      resend.emails.send({
-        from: FROM,
-        to: ADMIN_EMAIL,
-        subject,
-        html: adminHtml,
-      }).catch((err) => logger.error('Failed to send admin email:', err))
+      transporter.sendMail({ from: FROM, to: ADMIN_EMAIL, subject, html: adminHtml })
+        .catch((err) => logger.error('Failed to send admin email:', err))
     );
   }
 
   // Always notify the kitchen/preparation email
   sends.push(
-    resend.emails.send({
-      from: FROM,
-      to: NOTIFY_EMAIL,
-      subject,
-      html: adminHtml,
-    }).catch((err) => logger.error('Failed to send notify email:', err))
+    transporter.sendMail({ from: FROM, to: NOTIFY_EMAIL, subject, html: adminHtml })
+      .catch((err) => logger.error('Failed to send notify email:', err))
   );
 
   // Send confirmation to customer if they provided email
   if (customerEmail) {
     sends.push(
-      resend.emails.send({
+      transporter.sendMail({
         from: FROM,
         to: customerEmail,
         subject: `✅ Your Tasty Bites order is confirmed! Order #${order.id.slice(0, 8).toUpperCase()}`,
@@ -163,18 +166,18 @@ export async function sendOrderConfirmationEmail(
 
 export async function sendTestEmail(): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
-    const result = await resend.emails.send({
+    const info = await transporter.sendMail({
       from: FROM,
-      to: ADMIN_EMAIL || 'shivatsastra@gmail.com',
+      to: NOTIFY_EMAIL,
       subject: '✅ Tasty Bites Email Setup Successful!',
       html: `
         <div style="font-family:Inter,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#fff;border-radius:16px;">
-          <h1 style="color:#E8521A;">🍛 Tasty Bites</h1>
-          <p>Your email notifications are working perfectly!</p>
+          <h1 style="color:#C2185B;">🍛 Tasty Bites</h1>
+          <p>Your Gmail email notifications are working perfectly!</p>
           <p style="color:#6b7280;font-size:14px;">You will receive an email like this every time a new order is placed.</p>
         </div>`,
     });
-    return { success: true, id: result.data?.id };
+    return { success: true, id: info.messageId };
   } catch (err: unknown) {
     return { success: false, error: String(err) };
   }

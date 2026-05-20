@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 const schema = z.object({
   customerName: z.string().min(2, 'Name must be at least 2 characters'),
   mobileNumber: z.string().min(8, 'Valid mobile number required').regex(/^[+\d\s-]+$/, 'Invalid phone number'),
-  email: z.preprocess((v) => (v === '' ? undefined : v), z.string().email('Valid email required').optional()),
+  email: z.string().email('Valid email required'),
   paymentMethod: z.enum(['SWISH', 'CASH']),
   notes: z.preprocess((v) => (v === '' ? undefined : v), z.string().max(500).optional()),
 });
@@ -30,7 +30,7 @@ export default function CheckoutPage() {
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { paymentMethod: 'SWISH' },
+    defaultValues: { paymentMethod: 'SWISH', email: '' },
   });
 
   const paymentMethod = watch('paymentMethod');
@@ -123,7 +123,8 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                      Email <span className="text-gray-400 font-normal">(optional — for order confirmation)</span>
+                      Email <span className="text-spice-500">*</span>
+                      <span className="text-gray-400 font-normal text-xs ml-1">(confirmation will be sent here)</span>
                     </label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

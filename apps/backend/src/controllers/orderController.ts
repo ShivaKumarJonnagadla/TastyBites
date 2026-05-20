@@ -81,10 +81,27 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
         include: { orderItems: { include: { dish: true } } },
       });
 
+      // Build dish summary across all active orders (same as new-order path)
+      const allActiveOrdersMerged = await prisma.order.findMany({
+        where: { archivedAt: null },
+        include: { orderItems: { include: { dish: { select: { name: true } } } } },
+      });
+      const mergedDishTotals = new Map<string, number>();
+      for (const o of allActiveOrdersMerged) {
+        for (const item of o.orderItems) {
+          const name = item.dish.name;
+          mergedDishTotals.set(name, (mergedDishTotals.get(name) ?? 0) + item.quantity);
+        }
+      }
+      const mergedDishSummary = Array.from(mergedDishTotals.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, totalQty]) => ({ name, totalQty }));
+
       // Send confirmation email for merged orders too
       sendOrderConfirmationEmail(
         updated as unknown as Parameters<typeof sendOrderConfirmationEmail>[0],
         email || null,
+        mergedDishSummary,
       ).catch(() => {});
 
       res.json({
