@@ -25,6 +25,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        cacheId: 'tastybites-v2',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.cloudinary\.com\/.*/i,
