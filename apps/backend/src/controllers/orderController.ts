@@ -119,9 +119,16 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
 
 export async function getOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { startDate, endDate, status, page = '1', limit = '20' } = req.query;
+    const { startDate, endDate, status, archived, page = '1', limit = '20' } = req.query;
 
     const where: Record<string, unknown> = {};
+
+    // archived=true → show only archived; default → show only non-archived
+    if (archived === 'true') {
+      where.archivedAt = { not: null };
+    } else {
+      where.archivedAt = null;
+    }
 
     if (startDate || endDate) {
       where.orderDate = {};
@@ -158,6 +165,78 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum),
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createManualOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { customerName, mobileNumber, paymentMethod, items, deliveryNote, notes } = req.body;
+
+    const dishIds = items.map((i: { dishId: string }) => i.dishId);
+    const dishes = await prisma.dish.findMany({
+      where: { id: { in: dishIds }, deletedAt: null },
+    });
+
+    if (dishes.length !== dishIds.length) {
+      return next(new AppError('One or more dishes not found', 400));
+    }
+
+    const dishMap = new Map(dishes.map((d) => [d.id, d]));
+    const orderItems = items.map((item: { dishId: string; quantity: number }) => {
+      const dish = dishMap.get(item.dishId)!;
+      return { dishId: item.dishId, quantity: item.quantity, price: Number(dish.price) };
+    });
+
+    const totalAmount = orderItems.reduce(
+      (sum: number, item: { quantity: number; price: number }) => sum + item.price * item.quantity,
+      0
+    );
+
+    const order = await prisma.order.create({
+      data: {
+        customerName,
+        mobileNumber,
+        totalAmount,
+        paymentMethod,
+        source: 'WHATSAPP',
+        deliveryNote: deliveryNote || null,
+        notes: notes || null,
+        orderItems: { create: orderItems },
+      },
+      include: { orderItems: { include: { dish: true } } },
+    });
+
+    res.status(201).json({ success: true, data: order, message: 'WhatsApp order added successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function archiveFridayOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    // Find all non-archived orders that contain at least one FRIDAY or BOTH dish
+    const activeOrders = await prisma.order.findMany({
+      where: { archivedAt: null },
+      include: { orderItems: { include: { dish: { select: { menuType: true } } } } },
+    });
+
+    const fridayOrderIds = activeOrders
+      .filter((o) => o.orderItems.some((i) => i.dish.menuType === 'FRIDAY' || i.dish.menuType === 'BOTH'))
+      .map((o) => o.id);
+
+    if (fridayOrderIds.length === 0) {
+      res.json({ success: true, archived: 0, message: 'No active Friday orders to archive' });
+      return;
+    }
+
+    await prisma.order.updateMany({
+      where: { id: { in: fridayOrderIds } },
+      data: { archivedAt: new Date() },
+    });
+
+    res.json({ success: true, archived: fridayOrderIds.length, message: `${fridayOrderIds.length} Friday orders archived` });
   } catch (err) {
     next(err);
   }

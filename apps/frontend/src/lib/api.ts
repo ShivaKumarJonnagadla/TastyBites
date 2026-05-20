@@ -40,12 +40,14 @@ export const dishApi = {
 // Orders
 export const orderApi = {
   create: (data: unknown) => api.post('/orders', data),
-  getAll: (params?: Record<string, string | number>) => api.get('/orders', { params }),
+  getAll: (params?: Record<string, string | number | boolean>) => api.get('/orders', { params }),
   getOne: (id: string) => api.get(`/orders/${id}`),
   updateStatus: (id: string, status: string) => api.patch(`/orders/${id}/status`, { status }),
   getStats: () => api.get('/orders/stats'),
   export: (params?: Record<string, string>) =>
     api.get('/orders/export', { params, responseType: 'blob' }),
+  createManual: (data: unknown) => api.post('/orders/manual', data),
+  archiveFriday: () => api.post('/orders/archive-friday'),
 };
 
 // Auth

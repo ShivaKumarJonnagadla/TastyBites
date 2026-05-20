@@ -33,6 +33,11 @@ enum PaymentMethod {
   CASH
 }
 
+enum OrderSource {
+  WEBSITE
+  WHATSAPP
+}
+
 model AdminUser {
   id        String   @id @default(uuid())
   username  String   @unique
@@ -79,6 +84,9 @@ model Order {
   status         OrderStatus   @default(PENDING)
   pickupMessage  String?
   notes          String?
+  deliveryNote   String?
+  source         OrderSource   @default(WEBSITE)
+  archivedAt     DateTime?
   orderDate      DateTime      @default(now())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
