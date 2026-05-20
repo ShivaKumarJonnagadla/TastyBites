@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, Eye, EyeOff, Search, X, Upload, CheckSquare, Square, CalendarDays, Star, Layers, XCircle, FileDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -260,12 +261,12 @@ export default function AdminDishesPage() {
     }
   };
 
-  const handleExportPDF = async (locationId: string, deliveryTime: string) => {
+  const handleExportMenu = async (locationId: string, deliveryTime: string) => {
     const selectedDishes = dishes.filter((d) => selectedIds.has(d.id));
     if (selectedDishes.length === 0) return;
     const loc = DELIVERY_LOCATIONS.find((l) => l.id === locationId) || DELIVERY_LOCATIONS[0];
 
-    // Fetch logo and embed as base64 so it works reliably in the print window
+    // Fetch logo as base64 so it renders without CORS issues
     let logoSrc = '';
     try {
       const res = await fetch('/logo.png');
@@ -277,6 +278,24 @@ export default function AdminDishesPage() {
         reader.readAsDataURL(blob);
       });
     } catch { /* logo unavailable — will hide gracefully */ }
+
+    // Pre-fetch all dish images as base64 to avoid CORS taint issues
+    const imageCache: Record<string, string> = {};
+    await Promise.all(selectedDishes.map(async (dish) => {
+      const src = dish.imageUrl || FALLBACK_IMG;
+      try {
+        const res = await fetch(src);
+        const blob = await res.blob();
+        imageCache[dish.id] = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      } catch {
+        imageCache[dish.id] = FALLBACK_IMG;
+      }
+    }));
 
     const weekNum = getWeekNumber(new Date());
     const fridayLabel = nextFridayLabel();
@@ -291,7 +310,7 @@ export default function AdminDishesPage() {
     const dishCards = selectedDishes.map((dish) => `
       <div class="dish-card">
         <div class="dish-img-wrap">
-          <img src="${dish.imageUrl || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" onerror="this.src='${FALLBACK_IMG}'" crossorigin="anonymous" />
+          <img src="${imageCache[dish.id] || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" />
           <div class="price-badge">SEK ${Number(dish.price)}</div>
           <div class="${dish.isVegetarian ? 'veg-badge' : 'nonveg-badge'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</div>
         </div>
@@ -313,14 +332,7 @@ export default function AdminDishesPage() {
       </div>
     `).join('');
 
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<title>Tasty Bites – Week ${weekNum} Friday Menu</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-<style>
+    const menuCss = `
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 /* HEADER */
@@ -368,11 +380,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .footer-contact-row b{color:#C2185B;}
 .footer-pay-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
 .footer-pay-row b{color:#1a1a1a;}
-@media print{@page{margin:8mm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.dish-card{break-inside:avoid;}.footer-grid{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
-</style>
-</head>
-<body>
-<div class="header">
+`;
+
+    const menuBody = `<div class="header">
   <div class="header-left">
     ${logoSrc ? `<div class="logo-wrap"><img class="logo-img" src="${logoSrc}" alt="Tasty Bites" /></div>` : ''}
     <div>
@@ -421,14 +431,45 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
     </div>
   </div>
 </div>
-</body>
-</html>`;
+`;
 
-    const win = window.open('', '_blank', 'width=960,height=720');
-    if (!win) { toast.error('Allow popups to export PDF'); return; }
-    win.document.write(html);
-    win.document.close();
-    win.addEventListener('load', () => setTimeout(() => win.print(), 900));
+    const toastId = toast.loading('Generating menu image…');
+    const container = document.createElement('div');
+    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;background:#fff;z-index:-9999;';
+    container.innerHTML = `<style>${menuCss}</style>${menuBody}`;
+    document.body.appendChild(container);
+
+    // Wait for all images inside the container to load
+    const imgs = Array.from(container.querySelectorAll('img'));
+    await Promise.all(imgs.map(img => new Promise<void>(resolve => {
+      if (img.complete) { resolve(); return; }
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+    })));
+
+    // Ensure fonts are ready
+    await document.fonts.ready;
+
+    try {
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        width: 960,
+        windowWidth: 960,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `tastybites-menu-week${weekNum}.png`;
+      link.href = dataUrl;
+      link.click();
+      toast.success('Menu exported as PNG!', { id: toastId });
+    } catch {
+      toast.error('Failed to generate image', { id: toastId });
+    } finally {
+      document.body.removeChild(container);
+    }
   };
 
   return (
@@ -532,9 +573,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
             <button
               onClick={() => setShowPDFModal(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-spice-500 text-white hover:bg-spice-600 transition-all shadow-sm"
-              title="Export selected dishes as a printable Friday Menu PDF"
+              title="Export selected dishes as a Friday Menu PNG image"
             >
-              <FileDown size={13} /> Export Menu PDF
+              <FileDown size={13} /> Export Menu
             </button>
             {bulkUpdating && (
               <motion.div
@@ -853,7 +894,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                   <div className="w-8 h-8 rounded-lg bg-spice-50 flex items-center justify-center">
                     <FileDown size={16} className="text-spice-500" />
                   </div>
-                  <h2 className="text-base font-semibold text-gray-900">Export Friday Menu PDF</h2>
+                  <h2 className="text-base font-semibold text-gray-900">Export Menu</h2>
                 </div>
                 <button onClick={() => setShowPDFModal(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
                   <X size={18} />
@@ -921,11 +962,11 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                       <button
                         onClick={() => {
                           setShowPDFModal(false);
-                          handleExportPDF(pdfLocationId, formatDeliveryTime(pdfDeliveryTime));
+                          handleExportMenu(pdfLocationId, formatDeliveryTime(pdfDeliveryTime));
                         }}
                         className="w-full flex items-center justify-center gap-2 py-3 bg-spice-500 hover:bg-spice-600 text-white rounded-xl font-semibold text-sm transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
                       >
-                        <FileDown size={16} /> Export Menu PDF
+                        <FileDown size={16} /> Export Menu
                       </button>
                     </motion.div>
                   )}
