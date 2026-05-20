@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, X, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, X, Upload, CheckSquare, Square, CalendarDays, Star, Layers, XCircle, FileDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -62,6 +62,23 @@ const statusColors: Record<string, string> = {
   BOTH: 'bg-green-100 text-green-700',
 };
 
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop';
+
+function getWeekNumber(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
+function nextFridayLabel(): string {
+  const d = new Date();
+  const daysUntilFriday = (5 - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + daysUntilFriday);
+  return d.toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export default function AdminDishesPage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +86,9 @@ export default function AdminDishesPage() {
   const [editing, setEditing] = useState<Dish | null>(null);
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [menuTypeFilter, setMenuTypeFilter] = useState<'ALL' | 'DAILY' | 'FRIDAY' | 'BOTH'>('ALL');
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -168,10 +188,164 @@ export default function AdminDishesPage() {
     }
   };
 
-  const filtered = dishes.filter((d) =>
-    d.name.toLowerCase().includes(search.toLowerCase()) ||
-    d.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = dishes.filter((d) => {
+    const matchesSearch =
+      d.name.toLowerCase().includes(search.toLowerCase()) ||
+      d.category.toLowerCase().includes(search.toLowerCase());
+    const matchesMenu = menuTypeFilter === 'ALL' || d.menuType === menuTypeFilter;
+    return matchesSearch && matchesMenu;
+  });
+
+  const allSelected = filtered.length > 0 && filtered.every((d) => selectedIds.has(d.id));
+  const someSelected = filtered.some((d) => selectedIds.has(d.id));
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((d) => d.id)));
+    }
+  };
+
+  const handleBulkMenuType = async (menuType: 'DAILY' | 'FRIDAY' | 'BOTH') => {
+    if (selectedIds.size === 0) return;
+    setBulkUpdating(true);
+    try {
+      await Promise.all([...selectedIds].map((id) => dishApi.update(id, { menuType })));
+      const label = menuType === 'DAILY' ? 'Daily Menu' : menuType === 'FRIDAY' ? 'Friday Special' : 'Both Menus';
+      toast.success(`${selectedIds.size} dish${selectedIds.size > 1 ? 'es' : ''} set to ${label}`);
+      setSelectedIds(new Set());
+      fetchDishes();
+    } catch {
+      toast.error('Failed to update some dishes');
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    const selectedDishes = dishes.filter((d) => selectedIds.has(d.id));
+    if (selectedDishes.length === 0) return;
+
+    const weekNum = getWeekNumber(new Date());
+    const fridayLabel = nextFridayLabel();
+
+    const spiceLabel = (level: string) => {
+      if (level === 'MILD') return '🟢 Mild';
+      if (level === 'MEDIUM') return '🌶️ Medium';
+      if (level === 'HOT') return '🌶️🌶️ Hot';
+      return '🌶️🌶️🌶️ Extra Hot';
+    };
+
+    const dishCards = selectedDishes.map((dish) => `
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img src="${dish.imageUrl || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" onerror="this.src='${FALLBACK_IMG}'" crossorigin="anonymous" />
+          <div class="price-badge">SEK ${Number(dish.price)}</div>
+          <div class="${dish.isVegetarian ? 'veg-badge' : 'nonveg-badge'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</div>
+        </div>
+        <div class="dish-body">
+          <h3 class="dish-name">${dish.name}</h3>
+          <p class="dish-desc">${dish.description}</p>
+          <span class="spice-tag">${spiceLabel(dish.spiceLevel)}</span>
+          <div class="ing-section">
+            <div class="ing-row">
+              <span class="ing-lang">🇬🇧 Ingredients</span>
+              <p class="ing-text">${dish.ingredients}</p>
+            </div>
+            <div class="ing-row">
+              <span class="ing-lang">🇸🇪 Ingredienser</span>
+              <p class="ing-text">${dish.ingredientsSv}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Tasty Bites – Week ${weekNum} Friday Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:24px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.brand{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:3px;}
+.tagline{font-size:10px;opacity:.75;letter-spacing:2.5px;text-transform:uppercase;}
+.header-right{text-align:right;}
+.week-label{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;opacity:.85;margin-bottom:2px;}
+.week-num{font-size:42px;font-weight:700;line-height:1;}
+.friday-date{font-size:10px;opacity:.7;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+.info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F9C6D8;padding:9px 36px;display:flex;gap:20px;flex-wrap:wrap;font-size:11.5px;color:#7A6055;}
+.info-item b{color:#C2185B;}
+.dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:22px 36px;}
+.dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);}
+.dish-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#f5edf0;}
+.dish-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.price-badge{position:absolute;bottom:10px;right:10px;background:#C2185B;color:#fff;font-size:14px;font-weight:700;padding:4px 13px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25);}
+.veg-badge,.nonveg-badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;}
+.veg-badge{background:rgba(255,255,255,.9);color:#166534;border:1px solid #BBF7D0;}
+.nonveg-badge{background:rgba(255,255,255,.9);color:#991B1B;border:1px solid #FECACA;}
+.dish-body{padding:11px 14px 14px;}
+.dish-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:3px;line-height:1.25;}
+.dish-desc{font-size:11px;color:#7A6055;line-height:1.5;margin-bottom:8px;}
+.spice-tag{display:inline-block;font-size:10px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:9px;}
+.ing-section{display:flex;flex-direction:column;gap:6px;padding-top:9px;border-top:1px solid #F2E4E8;}
+.ing-row{}
+.ing-lang{display:block;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
+.ing-text{font-size:10.5px;color:#444;line-height:1.55;}
+.footer{margin:0 36px 24px;padding:13px 20px;background:#FFF3F7;border:1.5px solid #F2E4E8;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11.5px;color:#7A6055;flex-wrap:wrap;}
+.footer-order b{color:#C2185B;font-size:13px;display:block;margin-bottom:2px;}
+.footer-pay{text-align:right;}
+.footer-pay b{color:#1a1a1a;}
+.footer-divider{width:1px;height:36px;background:#F2E4E8;flex-shrink:0;}
+@media print{@page{margin:8mm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.dish-card{break-inside:avoid;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="brand">🍛 Tasty Bites</div>
+    <div class="tagline">Authentic Indian · Älmhult, Sweden</div>
+  </div>
+  <div class="header-right">
+    <div class="week-label">Friday Menu</div>
+    <div class="week-num">Week ${weekNum}</div>
+    <div class="friday-date">${fridayLabel}</div>
+  </div>
+</div>
+<div class="info-strip">
+  <div class="info-item">📦 <b>Cloud Kitchen</b> — Pickup &amp; Delivery only</div>
+  <div class="info-item">🕐 <b>1 day</b> advance notice required</div>
+  <div class="info-item">🍽️ Min. <b>2 portions</b> per dish</div>
+  <div class="info-item">💬 WhatsApp: <b>+46 769677497</b></div>
+</div>
+<div class="dishes-grid">${dishCards}</div>
+<div class="footer">
+  <div class="footer-order"><b>📋 How to Order</b>WhatsApp us at +46 769677497 with your dish selection &amp; preferred pickup/delivery time.</div>
+  <div class="footer-divider"></div>
+  <div class="footer-pay"><b>Payment</b><br/>Swish: +46 769677497<br/>or Cash on pickup</div>
+</div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=960,height=720');
+    if (!win) { toast.error('Allow popups to export PDF'); return; }
+    win.document.write(html);
+    win.document.close();
+    win.addEventListener('load', () => setTimeout(() => win.print(), 900));
+  };
 
   return (
     <div className="space-y-6">
@@ -186,16 +360,108 @@ export default function AdminDishesPage() {
         </button>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search dishes..."
-          className="input-field pl-9 py-2.5"
-        />
+      {/* Search + Menu Filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search dishes..."
+            className="input-field pl-9 py-2.5 w-56"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 p-1 bg-gray-100 rounded-xl">
+          {(['ALL', 'DAILY', 'FRIDAY', 'BOTH'] as const).map((type) => {
+            const labels: Record<string, string> = { ALL: 'All', DAILY: 'Daily', FRIDAY: 'Friday', BOTH: 'Both' };
+            const activeColors: Record<string, string> = {
+              ALL: 'bg-white text-gray-900 shadow-sm',
+              DAILY: 'bg-blue-500 text-white shadow-sm',
+              FRIDAY: 'bg-purple-500 text-white shadow-sm',
+              BOTH: 'bg-green-500 text-white shadow-sm',
+            };
+            const count = type === 'ALL' ? dishes.length : dishes.filter((d) => d.menuType === type).length;
+            return (
+              <button
+                key={type}
+                onClick={() => setMenuTypeFilter(type)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  menuTypeFilter === type ? activeColors[type] : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {labels[type]}
+                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
+                  menuTypeFilter === type ? 'bg-white/25 text-inherit' : 'bg-gray-200 text-gray-600'
+                }`}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Bulk Action Toolbar */}
+      <AnimatePresence>
+        {someSelected && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-center gap-3 flex-wrap px-4 py-3 bg-spice-50 border border-spice-200 rounded-xl"
+          >
+            <span className="text-sm font-semibold text-spice-700 mr-1">
+              {selectedIds.size} dish{selectedIds.size > 1 ? 'es' : ''} selected
+            </span>
+            <span className="text-gray-300">|</span>
+            <span className="text-xs text-gray-500 font-medium">Set menu type:</span>
+            <button
+              onClick={() => handleBulkMenuType('DAILY')}
+              disabled={bulkUpdating}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all disabled:opacity-50"
+            >
+              <CalendarDays size={13} /> Daily Menu
+            </button>
+            <button
+              onClick={() => handleBulkMenuType('FRIDAY')}
+              disabled={bulkUpdating}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all disabled:opacity-50"
+            >
+              <Star size={13} /> Friday Special
+            </button>
+            <button
+              onClick={() => handleBulkMenuType('BOTH')}
+              disabled={bulkUpdating}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700 hover:bg-green-200 transition-all disabled:opacity-50"
+            >
+              <Layers size={13} /> Both Menus
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="ml-auto flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <XCircle size={14} /> Clear
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-spice-500 text-white hover:bg-spice-600 transition-all shadow-sm"
+              title="Export selected dishes as a printable Friday Menu PDF"
+            >
+              <FileDown size={13} /> Export Menu PDF
+            </button>
+            {bulkUpdating && (
+              <motion.div
+                className="w-4 h-4 border-2 border-spice-300 border-t-spice-600 rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Dishes Table */}
       <div className="card overflow-hidden">
@@ -209,6 +475,19 @@ export default function AdminDishesPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="pl-4 pr-2 py-3">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="text-gray-400 hover:text-spice-500 transition-colors"
+                      title={allSelected ? 'Deselect all' : 'Select all'}
+                    >
+                      {allSelected
+                        ? <CheckSquare size={17} className="text-spice-500" />
+                        : someSelected
+                          ? <CheckSquare size={17} className="text-spice-300" />
+                          : <Square size={17} />}
+                    </button>
+                  </th>
                   {['Image', 'Dish', 'Category', 'Menu', 'Price', 'Status', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       {h}
@@ -218,7 +497,24 @@ export default function AdminDishesPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map((dish) => (
-                  <tr key={dish.id} className="hover:bg-gray-50/50 transition-colors">
+                  <tr
+                    key={dish.id}
+                    className={`transition-colors ${
+                      selectedIds.has(dish.id)
+                        ? 'bg-spice-50/60 hover:bg-spice-50'
+                        : 'hover:bg-gray-50/50'
+                    }`}
+                  >
+                    <td className="pl-4 pr-2 py-3">
+                      <button
+                        onClick={() => toggleSelect(dish.id)}
+                        className="text-gray-300 hover:text-spice-500 transition-colors"
+                      >
+                        {selectedIds.has(dish.id)
+                          ? <CheckSquare size={17} className="text-spice-500" />
+                          : <Square size={17} />}
+                      </button>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         <img
