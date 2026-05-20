@@ -375,6 +375,7 @@ async function main() {
       where: { name: dish.name },
       update: {
         description: dish.description,
+        descriptionSv: (dish as any).descriptionSv ?? '',
         ingredients: dish.ingredients,
         ingredientsSv: dish.ingredientsSv,
         price: dish.price,

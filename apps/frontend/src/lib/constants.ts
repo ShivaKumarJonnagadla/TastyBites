@@ -26,3 +26,12 @@ export const MARKETING_MESSAGES = [
   'Taste India in every bite',
   'Traditional Indian flavors delivered fresh',
 ] as const;
+
+export const MARKETING_MESSAGES_SV = [
+  'Hemlagad indisk mat som smakar underbart',
+  'Nytillagad med äkta indiska kryddor',
+  'Gjord med kärlek för indiska och svenska matälskare',
+  'Smaka Indien i varje tugga',
+  'Traditionella indiska smaker — levererade färska',
+] as const;
+

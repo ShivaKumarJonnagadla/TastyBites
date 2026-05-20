@@ -53,6 +53,7 @@ model Dish {
   id            String      @id @default(uuid())
   name          String      @unique
   description   String
+  descriptionSv String      @default("")
   ingredients   String
   ingredientsSv String
   pieces        Int?

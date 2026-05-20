@@ -9,6 +9,7 @@ interface Dish {
   id: string;
   name: string;
   description: string;
+  descriptionSv: string;
   ingredients: string;
   ingredientsSv: string;
   pieces: number | null;
@@ -33,11 +34,11 @@ const spiceLevelColors: Record<string, string> = {
   EXTRA_HOT: 'text-red-700 bg-red-100',
 };
 
-const spiceLevelLabel: Record<string, string> = {
-  MILD: 'Mild',
-  MEDIUM: 'Medium 🌶️',
-  HOT: 'Hot 🌶️🌶️',
-  EXTRA_HOT: 'Extra Hot 🌶️🌶️🌶️',
+const spiceLevelKeys: Record<string, string> = {
+  MILD: 'dish.spice.mild',
+  MEDIUM: 'dish.spice.medium',
+  HOT: 'dish.spice.hot',
+  EXTRA_HOT: 'dish.spice.extraHot',
 };
 
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&auto=format';
@@ -51,6 +52,7 @@ export default function DishCard({ dish, readOnly = false }: Props) {
   const cartItem = items.find((i) => i.dish.id === dish.id);
   const quantity = cartItem?.quantity || 0;
 
+  const description = i18n.language === 'sv' ? (dish.descriptionSv || dish.description) : dish.description;
   const ingredients = i18n.language === 'sv' ? dish.ingredientsSv : dish.ingredients;
 
   const handleAdd = () => {
@@ -99,11 +101,11 @@ export default function DishCard({ dish, readOnly = false }: Props) {
         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
           {dish.isVegetarian ? (
             <span className="badge-veg">
-              <Leaf size={11} /> Veg
+              <Leaf size={11} /> {t('dish.veg')}
             </span>
           ) : (
             <span className="badge-nonveg">
-              <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Non-Veg
+              <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> {t('dish.nonVeg')}
             </span>
           )}
         </div>
@@ -123,19 +125,19 @@ export default function DishCard({ dish, readOnly = false }: Props) {
           </h3>
           <span className={`spice-badge ${spiceLevelColors[dish.spiceLevel]} flex-shrink-0 text-xs`}>
             <Flame size={11} />
-            {spiceLevelLabel[dish.spiceLevel]}
+            {t(spiceLevelKeys[dish.spiceLevel] || 'dish.spice.mild')}
           </span>
         </div>
 
         {/* Description */}
         <p className="text-sm text-gray-500 mb-3 leading-relaxed">
-          {dish.description}
+          {description}
         </p>
 
         {/* Ingredients — full, bold, visible */}
         <div className="mb-4 p-2.5 bg-amber-50 border border-amber-100 rounded-lg">
           <p className="text-xs font-bold text-amber-800 uppercase tracking-wide mb-1">
-            Ingredients
+            {t('dish.ingredients')}
           </p>
           <p className="text-xs font-semibold text-gray-700 leading-relaxed">
             {ingredients}

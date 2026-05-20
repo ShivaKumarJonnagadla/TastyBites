@@ -11,6 +11,7 @@ interface Dish {
   id: string;
   name: string;
   description: string;
+  descriptionSv: string;
   ingredients: string;
   ingredientsSv: string;
   pieces: number | null;

@@ -5,12 +5,13 @@ import { ArrowRight, Star, ChevronDown, Phone, Clock, MapPin, MessageCircle, Inf
 import { useTranslation } from 'react-i18next';
 import { dishApi } from '../lib/api';
 import MenuSection from '../components/menu/MenuSection';
-import { GREETING_MESSAGES, MARKETING_MESSAGES } from '../lib/constants';
+import { GREETING_MESSAGES, MARKETING_MESSAGES, MARKETING_MESSAGES_SV } from '../lib/constants';
 
 interface Dish {
   id: string;
   name: string;
   description: string;
+  descriptionSv: string;
   ingredients: string;
   ingredientsSv: string;
   pieces: number | null;
@@ -71,14 +72,7 @@ const testimonials = [
   },
 ];
 
-const faqs = [
-  { q: 'How do I place an order?', a: 'Browse our menu, add items to your cart, and proceed to checkout. Enter your name, mobile number and email, choose your payment method, and confirm your order.' },
-  { q: 'How do I pay?', a: 'We accept Swish (scan the QR code) and Cash. Pay when you pick up your food.' },
-  { q: 'Where do I pick up my order?', a: 'We are a cloud kitchen based in Hjortvägen, Älmhult. Pickup details are shared in your order confirmation.' },
-  { q: 'Do you do party or office orders?', a: 'Yes! We undertake party, office lunch & dinner orders. WhatsApp us at +46 769677497 to discuss.' },
-  { q: 'Is the food halal?', a: 'Yes! All our meat dishes are prepared with halal certified ingredients.' },
-  { q: 'Do you have vegetarian options?', a: 'Absolutely! We have a wide range of South Indian vegetarian dishes. Look for the green leaf icon.' },
-];
+const faqs = Array.from({ length: 6 }, (_, i) => ({ qKey: `faq.q${i + 1}`, aKey: `faq.a${i + 1}` }));
 
 // Stop hero video at this timestamp and loop back to start (hides logo/contact end section)
 const VIDEO_STOP_AT_SECS = 34;
@@ -199,7 +193,7 @@ export default function HomePage() {
               {[1,2,3,4,5].map((i) => (
                 <Star key={i} size={13} className="fill-yellow-300 text-yellow-300" />
               ))}
-              <span className="ml-0.5">5-Star Rated Indian Food in Älmhult</span>
+              <span className="ml-0.5">{t('home.rating')}</span>
             </span>
           </motion.div>
 
@@ -231,7 +225,7 @@ export default function HomePage() {
             exit={{ opacity: 0, y: -10 }}
             className="text-base text-white/70 italic mb-10 h-6"
           >
-            "{MARKETING_MESSAGES[marketingIdx]}"
+            "{i18n.language === 'sv' ? MARKETING_MESSAGES_SV[marketingIdx] : MARKETING_MESSAGES[marketingIdx]}"
           </motion.div>
 
           {/* CTAs */}
@@ -253,7 +247,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-base text-white border-2 border-white/40 hover:bg-white/10 transition-all"
             >
-              <Phone size={18} /> WhatsApp Us
+              <Phone size={18} /> {t('home.whatsapp')}
             </a>
           </motion.div>
         </div>
@@ -297,7 +291,7 @@ export default function HomePage() {
               ))}
             </div>
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-600 shadow-sm">
-              <span>📍</span> Hjortvägen, Älmhult, Sweden &nbsp;·&nbsp;
+              <span>📍</span> {t('home.welcome.location')} &nbsp;·&nbsp;
               <a href="tel:+46769677497" className="text-spice-500 font-semibold hover:underline">+46 769677497</a>
             </div>
           </motion.div>
@@ -315,13 +309,11 @@ export default function HomePage() {
           >
             <span className="text-4xl">📦</span>
             <div>
-              <p className="font-bold text-gray-900 text-base mb-1">We are a Cloud Kitchen — Pickup &amp; Delivery only, no dine-in.</p>
+              <p className="font-bold text-gray-900 text-base mb-1">{t('home.cloud.title')}</p>
               <p className="text-sm text-gray-600 leading-relaxed">
-                We can prepare any dish on any day with <span className="font-semibold text-spice-600">1 day advance notice</span>.
-                Minimum order is <span className="font-semibold text-spice-600">2 portions per dish</span>.
-                WhatsApp us at{' '}
+                {t('home.cloud.detail')}{' '}
                 <a href="https://wa.me/46769677497" className="text-spice-500 font-semibold hover:underline">+46 769677497</a>{' '}
-                to place your order.
+                {i18n.language === 'sv' ? 'för att lägga din beställning.' : 'to place your order.'}
               </p>
             </div>
           </motion.div>
@@ -330,8 +322,8 @@ export default function HomePage() {
 
       {/* All Dishes */}
       <MenuSection
-        title="All Dishes"
-        subtitle="Available any day — order 1 day in advance · min. 2 portions per dish"
+        title={t('home.allDishes.title')}
+        subtitle={t('home.allDishes.subtitle')}
         dishes={allDishes}
         isLoading={loading}
         emoji="🍽️"
@@ -341,7 +333,7 @@ export default function HomePage() {
       <div id="friday-menu" className="bg-gradient-to-b from-pink-100 to-pink-50">
         <MenuSection
           title={t('menu.friday')}
-          subtitle="Special dishes available every Friday"
+          subtitle={t('home.fridayMenu.subtitle')}
           dishes={fridayDishes}
           isLoading={loading}
           emoji="🎉"
@@ -357,8 +349,8 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <h2 className="section-title">What Our Customers Say</h2>
-            <p className="section-subtitle">Reviews from our valued customers on Google</p>
+            <h2 className="section-title">{t('home.reviews.title')}</h2>
+            <p className="section-subtitle">{t('home.reviews.subtitle')}</p>
 
             {/* Google Rating Badge */}
             <div className="inline-flex items-center gap-3 mt-6 bg-white border border-gray-200 rounded-2xl px-6 py-3 shadow-sm">
@@ -382,7 +374,7 @@ export default function HomePage() {
                 rel="noopener noreferrer"
                 className="text-xs text-spice-500 font-semibold hover:underline ml-1"
               >
-                View all →
+                {t('home.reviews.viewAll')}
               </a>
             </div>
           </motion.div>
@@ -437,7 +429,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <h2 className="section-title">Frequently Asked Questions</h2>
+            <h2 className="section-title">{t('faq.title')}</h2>
           </motion.div>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
@@ -453,7 +445,7 @@ export default function HomePage() {
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
                   className="w-full flex items-center justify-between px-5 py-4 text-left"
                 >
-                  <span className="font-semibold text-gray-900 pr-4">{faq.q}</span>
+                  <span className="font-semibold text-gray-900 pr-4">{t(faq.qKey)}</span>
                   <motion.div
                     animate={{ rotate: openFaq === i ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
@@ -466,7 +458,7 @@ export default function HomePage() {
                   animate={{ height: openFaq === i ? 'auto' : 0, opacity: openFaq === i ? 1 : 0 }}
                   className="overflow-hidden"
                 >
-                  <p className="px-5 pb-4 text-gray-600 leading-relaxed text-sm">{faq.a}</p>
+                  <p className="px-5 pb-4 text-gray-600 leading-relaxed text-sm">{t(faq.aKey)}</p>
                 </motion.div>
               </motion.div>
             ))}
@@ -484,14 +476,14 @@ export default function HomePage() {
           >
             <div className="flex items-center gap-2 justify-center mb-6">
               <Info size={20} className="text-white" />
-              <h2 className="text-xl font-display font-bold text-white">Good to Know</h2>
+              <h2 className="text-xl font-display font-bold text-white">{t('home.goodToKnow.title')}</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { emoji: '🍽️', text: 'Indian dishes of your choice can be prepared on request, even if not on the menu' },
-                { emoji: '2️⃣', text: 'Minimum order quantity for any dish is 2 portions' },
-                { emoji: '🎉', text: 'We undertake party, office lunch & dinner orders' },
-                { emoji: '🎂', text: 'We also take custom cake orders for birthday parties' },
+                { emoji: '🍽️', textKey: 'home.goodToKnow.item1' },
+                { emoji: '2️⃣', textKey: 'home.goodToKnow.item2' },
+                { emoji: '🎉', textKey: 'home.goodToKnow.item3' },
+                { emoji: '🎂', textKey: 'home.goodToKnow.item4' },
               ].map((item, i) => (
                 <motion.div
                   key={i}
@@ -502,7 +494,7 @@ export default function HomePage() {
                   className="bg-white/15 backdrop-blur-sm rounded-xl p-4 border border-white/20 text-center"
                 >
                   <div className="text-3xl mb-2">{item.emoji}</div>
-                  <p className="text-white text-sm leading-relaxed">{item.text}</p>
+                  <p className="text-white text-sm leading-relaxed">{t(item.textKey)}</p>
                 </motion.div>
               ))}
             </div>
@@ -519,7 +511,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <h2 className="section-title">Find Us & Contact</h2>
+            <h2 className="section-title">{t('home.contact.title')}</h2>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Hours */}
@@ -533,20 +525,20 @@ export default function HomePage() {
                 <div className="w-9 h-9 bg-spice-100 rounded-lg flex items-center justify-center">
                   <Clock size={18} className="text-spice-600" />
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">Hours of Operation</h3>
+                <h3 className="font-bold text-gray-900 text-lg">{t('home.contact.hours.title')}</h3>
               </div>
               <div className="space-y-2">
                 {[
-                  ['Monday', '09:00 – 17:00'],
-                  ['Tuesday', '09:00 – 17:00'],
-                  ['Wednesday', '09:00 – 17:00'],
-                  ['Thursday', '09:00 – 17:00'],
-                  ['Friday', '09:00 – 17:00'],
-                  ['Saturday', '09:00 – 17:00'],
-                  ['Sunday', '09:00 – 17:00'],
-                ].map(([day, hours]) => (
-                  <div key={day} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-600 font-medium">{day}</span>
+                  ['home.contact.hours.monday', '09:00 – 17:00'],
+                  ['home.contact.hours.tuesday', '09:00 – 17:00'],
+                  ['home.contact.hours.wednesday', '09:00 – 17:00'],
+                  ['home.contact.hours.thursday', '09:00 – 17:00'],
+                  ['home.contact.hours.friday', '09:00 – 17:00'],
+                  ['home.contact.hours.saturday', '09:00 – 17:00'],
+                  ['home.contact.hours.sunday', '09:00 – 17:00'],
+                ].map(([dayKey, hours]) => (
+                  <div key={dayKey} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
+                    <span className="text-sm text-gray-600 font-medium">{t(dayKey)}</span>
                     <span className="text-sm font-semibold text-spice-600 bg-spice-50 px-3 py-0.5 rounded-full">{hours}</span>
                   </div>
                 ))}
@@ -565,10 +557,10 @@ export default function HomePage() {
                   <div className="w-9 h-9 bg-spice-100 rounded-lg flex items-center justify-center">
                     <MapPin size={18} className="text-spice-600" />
                   </div>
-                  <h3 className="font-bold text-gray-900 text-lg">Our Location</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">{t('home.contact.location.title')}</h3>
                 </div>
-                <p className="text-gray-700 font-medium mb-1">Hjortvägen, Älmhult, Sweden</p>
-                <p className="text-sm text-gray-500">We are a home kitchen — pickup details will be shared in your order confirmation.</p>
+                <p className="text-gray-700 font-medium mb-1">{t('home.contact.location.address')}</p>
+                <p className="text-sm text-gray-500">{t('home.contact.location.description')}</p>
               </div>
 
               <div className="card p-6">
@@ -576,7 +568,7 @@ export default function HomePage() {
                   <div className="w-9 h-9 bg-green-100 rounded-lg flex items-center justify-center">
                     <MessageCircle size={18} className="text-green-600" />
                   </div>
-                  <h3 className="font-bold text-gray-900 text-lg">Contact Us</h3>
+                  <h3 className="font-bold text-gray-900 text-lg">{t('home.contact.contact.title', 'Contact Us')}</h3>
                 </div>
                 <div className="space-y-3">
                   <a
@@ -587,7 +579,7 @@ export default function HomePage() {
                   >
                     <span className="text-2xl">💬</span>
                     <div>
-                      <p className="text-sm font-semibold text-green-800">WhatsApp</p>
+                      <p className="text-sm font-semibold text-green-800">{t('home.contact.whatsapp')}</p>
                       <p className="text-sm text-green-700">+46 769677497</p>
                     </div>
                   </a>
@@ -597,7 +589,7 @@ export default function HomePage() {
                   >
                     <Phone size={20} className="text-spice-600 ml-1" />
                     <div>
-                      <p className="text-sm font-semibold text-spice-800">Call Us</p>
+                      <p className="text-sm font-semibold text-spice-800">{t('home.contact.call')}</p>
                       <p className="text-sm text-spice-700">+46 769677497</p>
                     </div>
                   </a>

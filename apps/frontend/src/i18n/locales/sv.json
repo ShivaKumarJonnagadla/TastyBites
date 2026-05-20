@@ -1,4 +1,75 @@
 {
+  "dish": {
+    "veg": "Vegetarisk",
+    "nonVeg": "Icke-vegetarisk",
+    "ingredients": "Ingredienser",
+    "spice": {
+      "mild": "Mild",
+      "medium": "Medel 🌶️",
+      "hot": "Stark 🌶️🌶️",
+      "extraHot": "Extra Stark 🌶️🌶️🌶️"
+    }
+  },
+  "home": {
+    "rating": "5-stjärnig Indisk Mat i Älmhult",
+    "whatsapp": "WhatsApp",
+    "welcome": {
+      "title": "🙏 Hemmets smak med traditionens touch",
+      "body": "Upplev smaken av Indien här i Älmhult! På Tasty Bites serverar vi hemlagad, smakfull och äkta indisk mat gjord med kärlek och traditionella recept. Från aromatisk Chicken Biryani och sydindisk frukost som Idly, Pongal & Vada, till rejäla sydindiska måltider och läcker Chettinadu-fiskgryta — varje rätt är ett firande av indisk matkultur.",
+      "tagline": "✨ En tugga och du känner dig som i Indien!",
+      "location": "Hjortvägen, Älmhult, Sverige",
+      "features": {
+        "homecooked": "Hemlagad",
+        "spices": "Äkta Kryddor",
+        "halal": "Halal-certifierad",
+        "advance": "1 Dag i Förväg",
+        "party": "Partybokningar"
+      }
+    },
+    "cloud": {
+      "title": "Vi är ett Cloud Kitchen — Upphämtning & Leverans, ingen restaurang.",
+      "detail": "Vi kan tillaga valfri rätt vilken dag som helst med 1 dags förvarning. Minsta beställning är 2 portioner per rätt. WhatsApp oss på"
+    },
+    "allDishes": {
+      "title": "Alla Rätter",
+      "subtitle": "Tillgänglig vilken dag som helst — beställ 1 dag i förväg · min. 2 portioner per rätt"
+    },
+    "fridayMenu": {
+      "subtitle": "Specialrätter tillgängliga varje fredag"
+    },
+    "reviews": {
+      "title": "Vad Våra Kunder Säger",
+      "subtitle": "Recensioner från våra uppskattade kunder på Google",
+      "viewAll": "Se alla →"
+    },
+    "goodToKnow": {
+      "title": "Bra att Veta",
+      "item1": "Indiska rätter efter önskemål kan tillagas på förfrågan, även om de inte finns på menyn",
+      "item2": "Minsta beställningsmängd för valfri rätt är 2 portioner",
+      "item3": "Vi tar emot party-, kontorslunch- och middagsbeställningar",
+      "item4": "Vi tar också emot beständiga tårtbeställningar till födelsedagskalas"
+    },
+    "contact": {
+      "title": "Hitta oss & Kontakt",
+      "hours": {
+        "title": "Öppettider",
+        "monday": "Måndag",
+        "tuesday": "Tisdag",
+        "wednesday": "Onsdag",
+        "thursday": "Torsdag",
+        "friday": "Fredag",
+        "saturday": "Lördag",
+        "sunday": "Söndag"
+      },
+      "location": {
+        "title": "Vår Plats",
+        "address": "Hjortvägen, Älmhult, Sverige",
+        "description": "Vi är ett hemkök — upphämtningsdetaljer delas i din orderbekräftelse."
+      },
+      "whatsapp": "WhatsApp",
+      "call": "Ring oss"
+    }
+  },
   "nav": {
     "home": "Hem",
     "menu": "Meny",
@@ -8,7 +79,6 @@
     "faq": "FAQ",
     "contact": "Kontakta oss",
     "about": "Om oss",
-    "contact": "Kontakt",
     "cart": "Varukorg",
     "admin": "Admin"
   },
@@ -30,7 +100,12 @@
     "pieces": "st",
     "noResults": "Inga rätter hittades",
     "emptyState": "Tack för ditt besök. Nya rätter kommer snart.",
-    "spiceLevel": "Kryddnivå"
+    "spiceLevel": "Kryddnivå",
+    "allDishes": "Alla Rätter",
+    "pageTitle": "Vår Meny",
+    "pageSubtitle": "Nytillagad med äkta indiska kryddor",
+    "allDishesSubtitle": "Tillgänglig vilken dag som helst — beställ 1 dag i förväg · min. 2 portioner per rätt",
+    "fridaySubtitle": "Specialrätter tillgängliga varje fredag"
   },
   "cart": {
     "title": "Din Varukorg",
@@ -83,17 +158,17 @@
   "faq": {
     "title": "Vanliga frågor",
     "q1": "Hur beställer jag?",
-    "a1": "Bläddra i vår meny, lägg varor i varukorgen och gå till kassan. Ange ditt namn och mobilnummer, välj betalningsmetod och bekräfta din beställning.",
+    "a1": "Bläddra i vår meny, lägg varor i varukorgen och gå till kassan. Ange ditt namn, mobilnummer och e-post, välj betalningsmetod och bekräfta din beställning.",
     "q2": "Hur betalar jag?",
     "a2": "Vi accepterar Swish (skanna QR-koden) och kontanter. Betala när du hämtar din mat.",
     "q3": "Var hämtar jag min beställning?",
-    "a3": "Upphämtningsplats och tid delas i din orderbekräftelse. Vi finns i Malmö, Sverige.",
-    "q4": "Är maten halal?",
-    "a4": "Ja! Alla våra kötträtter tillagas med halal-certifierade ingredienser.",
-    "q5": "Har ni vegetariska alternativ?",
-    "a5": "Absolut! Vi har ett brett utbud av läckra vegetariska rätter. Se efter det gröna bladikonen.",
-    "q6": "Kan jag ändra min beställning?",
-    "a6": "Kontakta oss omedelbart via WhatsApp om du behöver ändra din beställning innan den tillagas."
+    "a3": "Vi är ett cloud kitchen i Hjortvägen, Älmhult. Upphämtningsdetaljer delas i din orderbekräftelse.",
+    "q4": "Tar ni partybeställningar eller kontorsbeställningar?",
+    "a4": "Ja! Vi tar emot party-, kontorslunch- och middagsbeställningar. WhatsApp oss på +46 769677497 för att diskutera.",
+    "q5": "Är maten halal?",
+    "a5": "Ja! Alla våra kötträtter tillagas med halal-certifierade ingredienser.",
+    "q6": "Har ni vegetariska alternativ?",
+    "a6": "Absolut! Vi har ett brett utbud av sydindiska vegetariska rätter. Se efter det gröna bladikonen."
   },
   "gdpr": {
     "message": "Vi respekterar din integritet. Vi lagrar endast orderrelaterad information som krävs för matleverans och upphämtning.",
@@ -101,3 +176,4 @@
     "decline": "Avböj"
   }
 }
+

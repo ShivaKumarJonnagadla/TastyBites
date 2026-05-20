@@ -8,6 +8,7 @@ interface Dish {
   id: string;
   name: string;
   description: string;
+  descriptionSv: string;
   ingredients: string;
   ingredientsSv: string;
   pieces: number | null;
@@ -43,7 +44,7 @@ export default function MenuPage() {
   }, []);
 
   const tabs: { id: Tab; label: string; emoji: string }[] = [
-    { id: 'all', label: 'All Dishes', emoji: '🍽️' },
+    { id: 'all', label: t('menu.allDishes'), emoji: '🍽️' },
     { id: 'friday', label: t('menu.friday'), emoji: '🎉' },
   ];
 
@@ -67,9 +68,9 @@ export default function MenuPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl font-display font-bold text-white mb-2"
           >
-            Our Menu
+            {t('menu.pageTitle')}
           </motion.h1>
-          <p className="text-white/80">Freshly prepared with authentic Indian spices</p>
+          <p className="text-white/80">{t('menu.pageSubtitle')}</p>
         </div>
       </div>
 

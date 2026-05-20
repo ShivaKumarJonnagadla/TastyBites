@@ -12,6 +12,7 @@ interface Dish {
   id: string;
   name: string;
   description: string;
+  descriptionSv: string;
   ingredients: string;
   ingredientsSv: string;
   pieces: number | null;
@@ -27,6 +28,7 @@ interface Dish {
 const schema = z.object({
   name: z.string().min(2),
   description: z.string().min(5),
+  descriptionSv: z.string().optional().default(''),
   ingredients: z.string().min(3),
   ingredientsSv: z.string().min(3),
   pieces: z.number().nullable().optional(),
@@ -44,6 +46,7 @@ type FormData = z.infer<typeof schema>;
 const defaultValues: FormData = {
   name: '',
   description: '',
+  descriptionSv: '',
   ingredients: '',
   ingredientsSv: '',
   pieces: null,
@@ -146,6 +149,7 @@ export default function AdminDishesPage() {
     reset({
       name: dish.name,
       description: dish.description,
+      descriptionSv: dish.descriptionSv || '',
       ingredients: dish.ingredients,
       ingredientsSv: dish.ingredientsSv,
       price: Number(dish.price),
@@ -703,12 +707,19 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
                   </div>
 
-                  {/* Description */}
+                  {/* Description EN */}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (English) *</label>
                     <textarea {...register('description')} rows={2} className="input-field resize-none"
                       placeholder="Short description of the dish" />
                     {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
+                  </div>
+
+                  {/* Description SV */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description (Swedish)</label>
+                    <textarea {...register('descriptionSv')} rows={2} className="input-field resize-none"
+                      placeholder="Kort beskrivning av rätten" />
                   </div>
 
                   {/* Ingredients EN */}
