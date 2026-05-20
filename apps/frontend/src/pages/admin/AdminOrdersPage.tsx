@@ -82,8 +82,10 @@ export default function AdminOrdersPage() {
       const res = await orderApi.getAll(params);
       setOrders(res.data.data || []);
       setTotal(res.data.total || 0);
-    } catch {
-      toast.error('Failed to load orders');
+    } catch (err: unknown) {
+      console.error('Failed to load orders:', err);
+      setOrders([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
@@ -185,8 +187,10 @@ export default function AdminOrdersPage() {
       setShowForm(false);
       setForm(emptyForm());
       fetchOrders();
-    } catch {
-      toast.error('Failed to save order');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg || 'Failed to save order');
+      console.error('WhatsApp order error:', err);
     } finally {
       setSubmitting(false);
     }
