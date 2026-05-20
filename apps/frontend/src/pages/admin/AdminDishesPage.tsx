@@ -280,8 +280,10 @@ export default function AdminDishesPage() {
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:24px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.brand{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:3px;}
+.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:20px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.header-left{display:flex;align-items:center;gap:16px;}
+.logo-img{height:60px;width:auto;object-fit:contain;filter:brightness(0) invert(1);}
+.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:2px;}
 .tagline{font-size:10px;opacity:.75;letter-spacing:2.5px;text-transform:uppercase;}
 .header-right{text-align:right;}
 .week-label{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;opacity:.85;margin-bottom:2px;}
@@ -305,19 +307,28 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .ing-row{}
 .ing-lang{display:block;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10.5px;color:#444;line-height:1.55;}
-.footer{margin:0 36px 24px;padding:13px 20px;background:#FFF3F7;border:1.5px solid #F2E4E8;border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11.5px;color:#7A6055;flex-wrap:wrap;}
-.footer-order b{color:#C2185B;font-size:13px;display:block;margin-bottom:2px;}
-.footer-pay{text-align:right;}
-.footer-pay b{color:#1a1a1a;}
-.footer-divider{width:1px;height:36px;background:#F2E4E8;flex-shrink:0;}
+.footer{margin:0 36px 24px;padding:0;background:#FFF3F7;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;font-size:11.5px;color:#7A6055;}
+.footer-order-row{padding:12px 20px;border-bottom:1px solid #F2E4E8;}
+.footer-order-row b{color:#C2185B;font-size:12px;display:block;margin-bottom:5px;}
+.footer-steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.footer-step{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#555;}
+.step-num{background:#C2185B;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.footer-bottom-row{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;flex-wrap:wrap;gap:10px;}
+.footer-website{font-size:11px;color:#7A6055;}
+.footer-website a{color:#C2185B;font-weight:700;text-decoration:none;}
+.footer-pay{text-align:right;font-size:11px;}
+.footer-pay b{color:#1a1a1a;display:block;margin-bottom:1px;}
 @media print{@page{margin:8mm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.dish-card{break-inside:avoid;}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div>
-    <div class="brand">🍛 Tasty Bites</div>
-    <div class="tagline">Authentic Indian · Älmhult, Sweden</div>
+  <div class="header-left">
+    <img class="logo-img" src="${window.location.origin}/logo.png" alt="Tasty Bites" onerror="this.style.display='none'" />
+    <div>
+      <div class="brand">Tasty Bites</div>
+      <div class="tagline">Authentic Indian · Älmhult, Sweden</div>
+    </div>
   </div>
   <div class="header-right">
     <div class="week-label">Friday Menu</div>
@@ -333,9 +344,18 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 </div>
 <div class="dishes-grid">${dishCards}</div>
 <div class="footer">
-  <div class="footer-order"><b>📋 How to Order</b>WhatsApp us at +46 769677497 with your dish selection &amp; preferred pickup/delivery time.</div>
-  <div class="footer-divider"></div>
-  <div class="footer-pay"><b>Payment</b><br/>Swish: +46 769677497<br/>or Cash on pickup</div>
+  <div class="footer-order-row">
+    <b>📋 How to Order</b>
+    <div class="footer-steps">
+      <div class="footer-step"><span class="step-num">1</span><span>Visit <b>tastybites.vercel.app</b> → Go to <b>Friday Menu</b></span></div>
+      <div class="footer-step"><span class="step-num">2</span><span>Choose your dishes &amp; portions, then <b>place order directly</b> on the website</span></div>
+      <div class="footer-step"><span class="step-num">3</span><span>Or send a <b>WhatsApp message</b> to <b>+46 769677497</b> with your selection &amp; pickup/delivery time</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom-row">
+    <div class="footer-website">🌐 <a href="https://tastybites.vercel.app">tastybites.vercel.app</a> &nbsp;|&nbsp; 💬 WhatsApp: <b>+46 769677497</b> &nbsp;|&nbsp; ☁️ Cloud Kitchen — Pickup &amp; Delivery only</div>
+    <div class="footer-pay"><b>Payment</b>Swish: +46 769677497 · Cash on pickup</div>
+  </div>
 </div>
 </body>
 </html>`;
