@@ -231,9 +231,22 @@ export default function AdminDishesPage() {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const selectedDishes = dishes.filter((d) => selectedIds.has(d.id));
     if (selectedDishes.length === 0) return;
+
+    // Fetch logo and embed as base64 so it works reliably in the print window
+    let logoSrc = '';
+    try {
+      const res = await fetch('/logo.png');
+      const blob = await res.blob();
+      logoSrc = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch { /* logo unavailable — will hide gracefully */ }
 
     const weekNum = getWeekNumber(new Date());
     const fridayLabel = nextFridayLabel();
@@ -280,18 +293,22 @@ export default function AdminDishesPage() {
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:20px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.header-left{display:flex;align-items:center;gap:16px;}
-.logo-img{height:60px;width:auto;object-fit:contain;filter:brightness(0) invert(1);}
-.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:2px;}
-.tagline{font-size:10px;opacity:.75;letter-spacing:2.5px;text-transform:uppercase;}
-.header-right{text-align:right;}
-.week-label{font-family:'Playfair Display',serif;font-size:14px;font-style:italic;opacity:.85;margin-bottom:2px;}
-.week-num{font-size:42px;font-weight:700;line-height:1;}
-.friday-date{font-size:10px;opacity:.7;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
-.info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F9C6D8;padding:9px 36px;display:flex;gap:20px;flex-wrap:wrap;font-size:11.5px;color:#7A6055;}
-.info-item b{color:#C2185B;}
-.dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:22px 36px;}
+/* HEADER */
+.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:18px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.header-left{display:flex;align-items:center;gap:14px;}
+.logo-img{height:56px;width:auto;object-fit:contain;filter:brightness(0) invert(1);}
+.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
+.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.header-right{text-align:right;flex-shrink:0;}
+.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:1px;}
+.week-num{font-size:40px;font-weight:700;line-height:1;}
+.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+/* INFO STRIP */
+.info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F2D4DE;padding:8px 36px;display:flex;align-items:center;gap:28px;font-size:11.5px;color:#7A6055;}
+.info-strip b{color:#C2185B;}
+.info-sep{color:#F2D4DE;font-size:16px;}
+/* DISHES */
+.dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 36px;}
 .dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);}
 .dish-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#f5edf0;}
 .dish-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -303,31 +320,33 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .dish-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:3px;line-height:1.25;}
 .dish-desc{font-size:11px;color:#7A6055;line-height:1.5;margin-bottom:8px;}
 .spice-tag{display:inline-block;font-size:10px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:9px;}
-.ing-section{display:flex;flex-direction:column;gap:6px;padding-top:9px;border-top:1px solid #F2E4E8;}
-.ing-row{}
+.ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
 .ing-lang{display:block;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10.5px;color:#444;line-height:1.55;}
-.footer{margin:0 36px 24px;padding:0;background:#FFF3F7;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;font-size:11.5px;color:#7A6055;}
-.footer-order-row{padding:12px 20px;border-bottom:1px solid #F2E4E8;}
-.footer-order-row b{color:#C2185B;font-size:12px;display:block;margin-bottom:5px;}
-.footer-steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
-.footer-step{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#555;}
-.step-num{background:#C2185B;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.footer-bottom-row{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;flex-wrap:wrap;gap:10px;}
-.footer-website{font-size:11px;color:#7A6055;}
-.footer-website a{color:#C2185B;font-weight:700;text-decoration:none;}
-.footer-pay{text-align:right;font-size:11px;}
-.footer-pay b{color:#1a1a1a;display:block;margin-bottom:1px;}
-@media print{@page{margin:8mm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.dish-card{break-inside:avoid;}}
+/* FOOTER */
+.footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
+.footer-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:#FFF3F7;}
+.footer-divider{background:#F2E4E8;}
+.footer-col{padding:14px 18px;}
+.footer-col-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C2185B;margin-bottom:8px;}
+.footer-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
+.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.footer-step p{font-size:10.5px;color:#555;line-height:1.5;}
+.footer-step p b{color:#1a1a1a;}
+.footer-contact-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
+.footer-contact-row b{color:#C2185B;}
+.footer-pay-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
+.footer-pay-row b{color:#1a1a1a;}
+@media print{@page{margin:8mm;size:A4;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}.dish-card{break-inside:avoid;}.footer-grid{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
 </style>
 </head>
 <body>
 <div class="header">
   <div class="header-left">
-    <img class="logo-img" src="${window.location.origin}/logo.png" alt="Tasty Bites" onerror="this.style.display='none'" />
+    ${logoSrc ? `<img class="logo-img" src="${logoSrc}" alt="Tasty Bites" />` : ''}
     <div>
       <div class="brand">Tasty Bites</div>
-      <div class="tagline">Authentic Indian · Älmhult, Sweden</div>
+      <div class="tagline">Authentic Indian &middot; &Auml;lmhult, Sweden</div>
     </div>
   </div>
   <div class="header-right">
@@ -337,24 +356,35 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
   </div>
 </div>
 <div class="info-strip">
-  <div class="info-item">📦 <b>Cloud Kitchen</b> — Pickup &amp; Delivery only</div>
-  <div class="info-item">🕐 <b>1 day</b> advance notice required</div>
-  <div class="info-item">🍽️ Min. <b>2 portions</b> per dish</div>
-  <div class="info-item">💬 WhatsApp: <b>+46 769677497</b></div>
+  <span>&#9729;&#65039; <b>Cloud Kitchen</b> &mdash; Pickup &amp; Delivery only</span>
+  <span class="info-sep">&bull;</span>
+  <span>&#128172; WhatsApp: <b>+46 769677497</b></span>
+  <span class="info-sep">&bull;</span>
+  <span>&#127758; <b>tastybites.vercel.app</b></span>
 </div>
 <div class="dishes-grid">${dishCards}</div>
 <div class="footer">
-  <div class="footer-order-row">
-    <b>📋 How to Order</b>
-    <div class="footer-steps">
-      <div class="footer-step"><span class="step-num">1</span><span>Visit <b>tastybites.vercel.app</b> → Go to <b>Friday Menu</b></span></div>
-      <div class="footer-step"><span class="step-num">2</span><span>Choose your dishes &amp; portions, then <b>place order directly</b> on the website</span></div>
-      <div class="footer-step"><span class="step-num">3</span><span>Or send a <b>WhatsApp message</b> to <b>+46 769677497</b> with your selection &amp; pickup/delivery time</span></div>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="footer-col-title">&#128203; How to Order Online</div>
+      <div class="footer-step"><span class="step-num">1</span><p>Visit <b>tastybites.vercel.app</b> and open <b>Friday Menu</b></p></div>
+      <div class="footer-step"><span class="step-num">2</span><p>Choose your dishes &amp; portions, then <b>place the order</b> directly on the site</p></div>
     </div>
-  </div>
-  <div class="footer-bottom-row">
-    <div class="footer-website">🌐 <a href="https://tastybites.vercel.app">tastybites.vercel.app</a> &nbsp;|&nbsp; 💬 WhatsApp: <b>+46 769677497</b> &nbsp;|&nbsp; ☁️ Cloud Kitchen — Pickup &amp; Delivery only</div>
-    <div class="footer-pay"><b>Payment</b>Swish: +46 769677497 · Cash on pickup</div>
+    <div class="footer-divider"></div>
+    <div class="footer-col">
+      <div class="footer-col-title">&#128172; Order via WhatsApp</div>
+      <div class="footer-step"><span class="step-num">3</span><p>Send a message to <b>+46 769677497</b> with your dish selection &amp; preferred pickup or delivery time</p></div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-col">
+      <div class="footer-col-title">&#128179; Payment</div>
+      <div class="footer-pay-row">&#128241; <b>Swish</b> &nbsp;+46 769677497</div>
+      <div class="footer-pay-row">&#128181; <b>Cash</b> &nbsp;on pickup</div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid #F2E4E8;">
+        <div class="footer-contact-row">&#128222; <b>+46 769677497</b></div>
+        <div class="footer-contact-row" style="font-size:10px;color:#aaa;">Cloud Kitchen &mdash; Pickup &amp; Delivery only</div>
+      </div>
+    </div>
   </div>
 </div>
 </body>
