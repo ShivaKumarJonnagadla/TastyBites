@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { CheckCircle, Home, UtensilsCrossed, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { orderApi } from '../lib/api';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 export default function ConfirmationPage() {
   const { orderId } = useParams();
@@ -11,8 +13,20 @@ export default function ConfirmationPage() {
   const { t } = useTranslation();
   const confettiRef = useRef(false);
 
-  const order = location.state?.order;
-  const merged = location.state?.merged;
+  const [order, setOrder] = useState<Record<string, unknown> | null>(location.state?.order ?? null);
+  const merged: boolean = location.state?.merged ?? false;
+  const [fetching, setFetching] = useState(!location.state?.order);
+
+  useEffect(() => {
+    if (!location.state?.order && orderId) {
+      orderApi.getOne(orderId)
+        .then((res) => setOrder(res.data.data))
+        .catch(() => {})
+        .finally(() => setFetching(false));
+    }
+  }, [orderId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (fetching) return <LoadingSpinner fullScreen />;
 
   useEffect(() => {
     if (!confettiRef.current) {

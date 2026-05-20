@@ -55,6 +55,7 @@ export default function CheckoutPage() {
 
       const res = await orderApi.create(orderData);
       clearCart();
+      toast.success(res.data.merged ? 'Order updated! 🎉' : 'Order placed! 🎉', { duration: 4000 });
       navigate(`/confirmation/${res.data.data.id}`, {
         state: { order: res.data.data, merged: res.data.merged },
       });

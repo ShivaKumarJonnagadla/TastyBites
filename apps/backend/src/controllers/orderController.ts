@@ -81,6 +81,12 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
         include: { orderItems: { include: { dish: true } } },
       });
 
+      // Send confirmation email for merged orders too
+      sendOrderConfirmationEmail(
+        updated as unknown as Parameters<typeof sendOrderConfirmationEmail>[0],
+        email || null,
+      ).catch(() => {});
+
       res.json({
         success: true,
         data: updated,
