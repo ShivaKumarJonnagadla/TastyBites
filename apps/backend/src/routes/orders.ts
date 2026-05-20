@@ -8,6 +8,7 @@ import {
   exportOrders,
   getOrderStats,
   archiveFridayOrders,
+  archiveSelectedOrders,
 } from '../controllers/orderController';
 import { authenticate } from '../middleware/auth';
 import { validate } from '../middleware/validate';
@@ -53,6 +54,7 @@ router.get('/stats', authenticate, getOrderStats);
 router.get('/export', authenticate, exportOrders);
 router.post('/manual', authenticate, validate(manualOrderSchema), createManualOrder);
 router.post('/archive-friday', authenticate, archiveFridayOrders);
+router.post('/archive-selected', authenticate, archiveSelectedOrders);
 router.get('/:id', authenticate, getOrder);
 router.patch('/:id/status', authenticate, updateOrderStatus);
 

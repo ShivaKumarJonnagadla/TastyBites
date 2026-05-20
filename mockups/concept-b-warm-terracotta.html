@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept B — Warm Terracotta | Tasty Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra: #C1440E;
+    --terra-light: #E8693A;
+    --terra-pale: #F5E6DF;
+    --terra-dark: #8B3009;
+    --cream: #FFFAF5;
+    --warm-white: #FFF8F2;
+    --warm-gray: #6B5C53;
+    --warm-light: #F2E8E1;
+    --dark-text: #2C1810;
+    --mid-text: #7A6055;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--dark-text); overflow-x: hidden; }
+
+  /* NAVBAR */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255, 250, 245, 0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(193, 68, 14, 0.1);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 64px;
+    box-shadow: 0 1px 16px rgba(44, 24, 16, 0.06);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 12px; }
+  .nav-logo-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terra-light), var(--terra-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: white; letter-spacing: -0.5px;
+  }
+  .nav-logo-title { font-family: 'Lora', serif; font-weight: 700; font-size: 17px; color: var(--dark-text); }
+  .nav-logo-sub { font-size: 10px; color: var(--terra); letter-spacing: 1.5px; text-transform: uppercase; }
+  .nav-links { display: flex; align-items: center; gap: 28px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--mid-text); text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover, .nav-link.active { color: var(--terra); }
+  .nav-story-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 16px; border-radius: 999px;
+    background: var(--terra); color: white;
+    font-size: 12px; font-weight: 700; cursor: pointer; border: none;
+    letter-spacing: 0.3px; box-shadow: 0 2px 12px rgba(193,68,14,0.3);
+    transition: all 0.2s;
+  }
+  .nav-story-btn:hover { background: var(--terra-light); transform: translateY(-1px); }
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .cart-btn {
+    position: relative; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--terra-pale); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    transition: all 0.2s;
+  }
+  .cart-btn:hover { background: var(--terra-pale); transform: scale(1.05); }
+  .cart-badge {
+    position: absolute; top: -3px; right: -3px;
+    width: 17px; height: 17px; border-radius: 50%;
+    background: var(--terra); color: white;
+    font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lang-btn {
+    padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(193,68,14,0.2);
+    color: var(--mid-text); font-size: 12px; font-weight: 600;
+    cursor: pointer; background: transparent;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative; min-height: 88vh;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(44,24,16,0.88) 0%, rgba(44,24,16,0.45) 50%, rgba(44,24,16,0.65) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; text-align: center; max-width: 700px; padding: 0 24px;
+  }
+  .hero-eyebrow {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: var(--terra-light); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: 'Lora', serif; font-size: clamp(48px, 7vw, 80px);
+    font-weight: 700; color: white; line-height: 1.1; margin-bottom: 20px;
+  }
+  .hero-title em { font-style: italic; color: #FFBE99; }
+  .hero-sub { font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 40px; font-weight: 300; line-height: 1.6; }
+  .hero-ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn-terra {
+    padding: 15px 36px; border-radius: 6px;
+    background: var(--terra); color: white;
+    font-weight: 700; font-size: 14px; cursor: pointer; border: none;
+    box-shadow: 0 4px 20px rgba(193,68,14,0.4);
+    transition: all 0.25s; letter-spacing: 0.3px;
+  }
+  .btn-terra:hover { background: var(--terra-light); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(193,68,14,0.4); }
+  .btn-outline-w {
+    padding: 14px 36px; border-radius: 6px;
+    border: 1.5px solid rgba(255,255,255,0.4); color: white;
+    font-weight: 600; font-size: 14px; cursor: pointer; background: transparent;
+    transition: all 0.2s;
+  }
+  .btn-outline-w:hover { background: rgba(255,255,255,0.1); }
+
+  /* TERRA BAND */
+  .terra-band {
+    background: var(--terra); padding: 18px 48px;
+    display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap;
+  }
+  .terra-item { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 500; }
+  .terra-icon { font-size: 18px; }
+  .terra-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+
+  /* CATEGORY PILLS — sticky, always visible */
+  .category-bar {
+    position: sticky; top: 64px; z-index: 50;
+    background: rgba(255,250,245,0.97); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--warm-light);
+    padding: 12px 48px;
+    display: flex; align-items: center; gap: 8px; overflow-x: auto;
+  }
+  .category-bar::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    padding: 8px 20px; border-radius: 999px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1.5px solid var(--warm-light);
+    color: var(--mid-text); background: white; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .cat-pill.active {
+    background: var(--terra); color: white; border-color: var(--terra);
+    font-weight: 700; box-shadow: 0 2px 10px rgba(193,68,14,0.25);
+  }
+  .cat-pill:hover:not(.active) { border-color: var(--terra); color: var(--terra); }
+
+  /* MENU SECTION */
+  .section { padding: 64px 48px; max-width: 1280px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 48px; }
+  .section-tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--terra); margin-bottom: 8px; }
+  .section-title { font-family: 'Lora', serif; font-size: 38px; font-weight: 700; color: var(--dark-text); margin-bottom: 8px; }
+  .section-sub { font-size: 15px; color: var(--mid-text); }
+
+  /* DISH GRID — 4 columns */
+  .dish-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .dish-card {
+    background: white; border-radius: 12px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(44,24,16,0.07);
+    transition: all 0.3s; border: 1px solid var(--warm-light);
+    position: relative;
+  }
+  .dish-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(44,24,16,0.13); }
+  .dish-img-wrap { position: relative; aspect-ratio: 4/3; overflow: hidden; }
+  .dish-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .dish-card:hover .dish-img { transform: scale(1.05); }
+
+  /* Ingredients overlay on hover */
+  .dish-ing-overlay {
+    position: absolute; inset: 0; background: rgba(44,24,16,0.85);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+    opacity: 0; transition: opacity 0.3s;
+    flex-direction: column; gap: 8px; text-align: center;
+  }
+  .dish-card:hover .dish-ing-overlay { opacity: 1; }
+  .ing-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--terra-light); text-transform: uppercase; }
+  .ing-text { font-size: 12px; color: rgba(255,255,255,0.85); line-height: 1.6; }
+
+  .dish-badge {
+    position: absolute; top: 12px; left: 12px; z-index: 2;
+    padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .badge-veg { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+  .badge-nonveg { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+  .spice-tag {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.92);
+  }
+
+  .dish-body { padding: 14px 16px 16px; }
+  .dish-name { font-family: 'Lora', serif; font-size: 15px; font-weight: 600; color: var(--dark-text); margin-bottom: 4px; line-height: 1.3; }
+  .dish-desc { font-size: 12px; color: var(--mid-text); line-height: 1.55; margin-bottom: 14px; }
+  .dish-footer { display: flex; align-items: center; justify-content: space-between; }
+  .dish-price { font-size: 19px; font-weight: 700; color: var(--dark-text); }
+  .dish-price span { font-size: 11px; font-weight: 400; color: var(--mid-text); margin-right: 2px; }
+  .add-btn {
+    height: 34px; padding: 0 16px; border-radius: 6px;
+    background: var(--terra); color: white; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { background: var(--terra-light); transform: scale(1.04); }
+
+  /* REVIEWS — carousel style */
+  .reviews-section { background: var(--warm-light); padding: 80px 48px; }
+  .reviews-carousel {
+    max-width: 780px; margin: 48px auto 0;
+    background: white; border-radius: 16px; padding: 48px;
+    box-shadow: 0 4px 24px rgba(44,24,16,0.08);
+    position: relative;
+  }
+  .big-quote { font-size: 80px; line-height: 1; color: var(--terra); opacity: 0.12; font-family: Georgia, serif; position: absolute; top: 16px; left: 32px; }
+  .carousel-text { font-family: 'Lora', serif; font-size: 20px; font-style: italic; line-height: 1.65; color: var(--dark-text); margin-bottom: 32px; position: relative; z-index: 1; }
+  .carousel-author { display: flex; align-items: center; gap: 16px; }
+  .c-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--terra-light), var(--terra-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 18px; color: white;
+  }
+  .c-name { font-size: 15px; font-weight: 700; color: var(--dark-text); }
+  .c-badge { font-size: 12px; color: var(--mid-text); }
+  .c-stars { color: #F59E0B; font-size: 15px; margin-top: 2px; }
+  .carousel-dots { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warm-light); transition: all 0.2s; cursor: pointer; }
+  .dot.active { background: var(--terra); width: 24px; border-radius: 4px; }
+  .carousel-nav { display: flex; justify-content: space-between; position: absolute; top: 50%; left: -20px; right: -20px; transform: translateY(-50%); pointer-events: none; }
+  .carousel-arrow {
+    width: 40px; height: 40px; border-radius: 50%; background: white;
+    border: 1px solid var(--warm-light); box-shadow: 0 2px 8px rgba(44,24,16,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; pointer-events: all; font-size: 18px; color: var(--mid-text);
+  }
+
+  .concept-label {
+    position: fixed; top: 80px; right: 20px; z-index: 999;
+    background: var(--terra); color: white;
+    padding: 8px 18px; border-radius: 6px;
+    font-size: 13px; font-weight: 700;
+    box-shadow: 0 4px 20px rgba(193,68,14,0.35);
+  }
+
+  /* Google badge */
+  .google-badge {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: white; border: 1px solid var(--warm-light);
+    border-radius: 12px; padding: 10px 20px; margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(44,24,16,0.06);
+  }
+  .g-score { font-size: 22px; font-weight: 700; color: var(--dark-text); }
+  .g-stars { color: #F59E0B; font-size: 15px; }
+  .g-label { font-size: 12px; color: var(--mid-text); }
+</style>
+</head>
+<body>
+
+<div class="concept-label">Concept B — Warm Terracotta ★</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">TB</div>
+    <div style="display:flex;flex-direction:column">
+      <span class="nav-logo-title">Tasty Bites</span>
+      <span class="nav-logo-sub">Authentic Indian</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Home</a>
+    <a class="nav-link" href="#">Menu</a>
+    <a class="nav-link" href="#">Friday Special</a>
+    <a class="nav-link" href="#">Reviews</a>
+    <a class="nav-link" href="#">FAQ</a>
+    <a class="nav-link" href="#">Contact</a>
+  </div>
+  <div class="nav-right">
+    <button class="nav-story-btn">▶ Our Story</button>
+    <button class="lang-btn">EN | SV</button>
+    <div class="cart-btn">🛒<span class="cart-badge">3</span></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <img class="hero-img" src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1600&q=80" alt="" />
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">🍛 Älmhult · Sweden</div>
+    <h1 class="hero-title">Authentic<br/>Indian Food,<br/><em>Made with Love</em></h1>
+    <p class="hero-sub">Home-cooked flavours from South India —<br/>Cloud kitchen · Pickup &amp; Delivery · Halal</p>
+    <div class="hero-ctas">
+      <button class="btn-terra">🍽️ Order Now</button>
+      <button class="btn-outline-w">💬 WhatsApp Us</button>
+    </div>
+  </div>
+</div>
+
+<!-- TERRACOTTA INFO BAND -->
+<div class="terra-band">
+  <div class="terra-item"><span class="terra-icon">📦</span> Cloud Kitchen · Pickup &amp; Delivery Only</div>
+  <div class="terra-divider"></div>
+  <div class="terra-item"><span class="terra-icon">🕐</span> 1 Day Advance Notice</div>
+  <div class="terra-divider"></div>
+  <div class="terra-item"><span class="terra-icon">🍽️</span> Min. 2 Portions Per Dish</div>
+  <div class="terra-divider"></div>
+  <div class="terra-item"><span class="terra-icon">💬</span> +46 769677497</div>
+</div>
+
+<!-- STICKY CATEGORY BAR -->
+<div class="category-bar">
+  <div class="cat-pill active">All Dishes</div>
+  <div class="cat-pill">🌟 Specialities</div>
+  <div class="cat-pill">🥗 Starters</div>
+  <div class="cat-pill">🌅 Breakfast</div>
+  <div class="cat-pill">🍚 Rice</div>
+  <div class="cat-pill">🥤 Drinks</div>
+  <div class="cat-pill">🥨 Snacks</div>
+  <div class="cat-pill">🌿 Vegetarian</div>
+</div>
+
+<!-- MENU -->
+<div style="background: var(--cream)">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Our Menu</div>
+      <h2 class="section-title">All Dishes</h2>
+      <p class="section-sub">Available any day — order 1 day in advance · min. 2 portions per dish</p>
+    </div>
+    <div class="dish-grid">
+      <!-- Card 1 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400&h=300&fit=crop" alt="" />
+          <div class="dish-ing-overlay">
+            <div class="ing-label">Ingredients</div>
+            <div class="ing-text">Basmati rice, chicken, biryani masala, ghee, mint, saffron, yogurt</div>
+          </div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="spice-tag">🌶️ Medium</div>
+        </div>
+        <div class="dish-body">
+          <div class="dish-name">Dindigul Chicken Biriyani</div>
+          <p class="dish-desc">Famous Dindigul-style dum biriyani with tender chicken and aromatic spices</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 100</div>
+            <button class="add-btn">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1528975604071-b4dc52a2d18c?w=400&h=300&fit=crop" alt="" />
+          <div class="dish-ing-overlay">
+            <div class="ing-label">Ingredients</div>
+            <div class="ing-text">Basmati rice, mixed vegetables, biryani masala, ghee, mint, yogurt</div>
+          </div>
+          <div class="dish-badge badge-veg">🌿 Veg</div>
+          <div class="spice-tag">🟢 Mild</div>
+        </div>
+        <div class="dish-body">
+          <div class="dish-name">Dindigul Veg Biriyani</div>
+          <p class="dish-desc">Fragrant Dindigul-style dum biriyani with fresh vegetables</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 85</div>
+            <button class="add-btn">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&h=300&fit=crop" alt="" />
+          <div class="dish-ing-overlay">
+            <div class="ing-label">Ingredients</div>
+            <div class="ing-text">Basmati rice, chicken, fried onions, yogurt, saffron, rose water</div>
+          </div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="spice-tag">🌶️ Medium</div>
+        </div>
+        <div class="dish-body">
+          <div class="dish-name">Hyderabad Chicken Dhum Biriyani</div>
+          <p class="dish-desc">Authentic Hyderabadi dum biriyani with juicy chicken and fragrant basmati</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 100</div>
+            <button class="add-btn">+ Add</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 4 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d6?w=400&h=300&fit=crop" alt="" />
+          <div class="dish-ing-overlay">
+            <div class="ing-label">Ingredients</div>
+            <div class="ing-text">Chicken, yogurt, red chili, ginger, garlic, curry leaves, cornflour</div>
+          </div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="spice-tag">🔥 Hot</div>
+        </div>
+        <div class="dish-body">
+          <div class="dish-name">Chicken 65</div>
+          <p class="dish-desc">Crispy deep-fried spiced chicken — a South Indian classic starter</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 80</div>
+            <button class="add-btn">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="reviews-section">
+  <div style="max-width:1280px;margin:0 auto">
+    <div class="section-header">
+      <div class="section-tag">Customer Reviews</div>
+      <h2 class="section-title">What People Say</h2>
+      <p class="section-sub">Real reviews from our customers on Google</p>
+      <div class="google-badge">
+        <span style="font-size:18px">🔵</span>
+        <span class="g-score">5.0</span>
+        <span class="g-stars">★★★★★</span>
+        <span class="g-label">on Google · 5 reviews</span>
+      </div>
+    </div>
+    <div style="position:relative">
+      <div class="reviews-carousel">
+        <div class="big-quote">"</div>
+        <p class="carousel-text">Finding Indian food in Sweden is like finding the Titanic diamond in the ocean, but you wouldn't believe I found one 😁 I've tried many places, but Tastybites is the only spot that truly delivers authentic flavors of India.</p>
+        <div class="carousel-author">
+          <div class="c-avatar">S</div>
+          <div>
+            <div class="c-name">Sheik Zayed</div>
+            <div class="c-badge">Local Guide · 18 reviews · 7 months ago</div>
+            <div class="c-stars">★★★★★</div>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-nav">
+        <div class="carousel-arrow">←</div>
+        <div class="carousel-arrow">→</div>
+      </div>
+    </div>
+    <div class="carousel-dots">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

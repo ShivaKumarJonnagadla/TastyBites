@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, RefreshCw, Filter, ChevronDown, Plus, MessageCircle, Archive, X, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, Filter, ChevronDown, Plus, MessageCircle, Archive, X, Trash2, CheckSquare } from 'lucide-react';
 import { orderApi, dishApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -59,6 +59,7 @@ export default function AdminOrdersPage() {
   const [endDate, setEndDate] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [total, setTotal] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Manual order form
   const [showForm, setShowForm] = useState(false);
@@ -102,6 +103,7 @@ export default function AdminOrdersPage() {
   };
 
   useEffect(() => { fetchOrders(); }, [tab, startDate, endDate, statusFilter]);
+  useEffect(() => { setSelectedIds(new Set()); }, [tab, orders]);
   useEffect(() => { if (showForm) fetchFridayDishes(); }, [showForm]);
 
   const updateStatus = async (id: string, status: string) => {
@@ -139,11 +141,19 @@ export default function AdminOrdersPage() {
   };
 
   const handleArchive = async () => {
-    if (!window.confirm(`Archive all ${fridayOrderCount} active Friday orders? This marks them as last week's orders so you can track next week fresh.`)) return;
+    const hasSelection = selectedIds.size > 0;
+    const idsToArchive = hasSelection ? Array.from(selectedIds) : null;
+    const count = hasSelection ? selectedIds.size : fridayOrderCount;
+    const label = hasSelection ? `${count} selected order(s)` : `${count} active Friday orders`;
+
+    if (!window.confirm(`Archive ${label}? They will move to the Archived tab.`)) return;
     setArchiving(true);
     try {
-      const res = await orderApi.archiveFriday();
-      toast.success(res.data.message || 'Friday orders archived');
+      const res = hasSelection
+        ? await orderApi.archiveSelected(idsToArchive!)
+        : await orderApi.archiveFriday();
+      toast.success(res.data.message || 'Orders archived');
+      setSelectedIds(new Set());
       fetchOrders();
     } catch {
       toast.error('Archive failed');
@@ -151,6 +161,39 @@ export default function AdminOrdersPage() {
       setArchiving(false);
     }
   };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const allSelected = orders.length > 0 && orders.every((o) => selectedIds.has(o.id));
+  const someSelected = selectedIds.size > 0 && !allSelected;
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(orders.map((o) => o.id)));
+    }
+  };
+
+  // Consolidated dish summary from current orders
+  const dishSummary = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const order of orders) {
+      for (const item of order.orderItems) {
+        const name = item.dish?.name;
+        if (name) map.set(name, (map.get(name) ?? 0) + item.quantity);
+      }
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => ({ name, qty }));
+  }, [orders]);
 
   // --- Manual order form handlers ---
   const setItemQty = (dishId: string, qty: number) => {
@@ -216,14 +259,18 @@ export default function AdminOrdersPage() {
           >
             <MessageCircle size={15} /> Add WhatsApp Order
           </button>
-          {tab === 'active' && fridayOrderCount > 0 && (
+          {tab === 'active' && (selectedIds.size > 0 || fridayOrderCount > 0) && (
             <button
               onClick={handleArchive}
               disabled={archiving}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-semibold transition-all"
             >
               <Archive size={15} />
-              {archiving ? 'Archiving…' : `Archive Friday Orders (${fridayOrderCount})`}
+              {archiving
+                ? 'Archiving…'
+                : selectedIds.size > 0
+                  ? `Archive Selected (${selectedIds.size})`
+                  : `Archive Friday Orders (${fridayOrderCount})`}
             </button>
           )}
           <button onClick={handleExport} disabled={exporting} className="btn-secondary text-sm">
@@ -287,40 +334,72 @@ export default function AdminOrdersPage() {
             <p>{tab === 'archived' ? 'No archived Friday orders yet.' : 'No orders found for the selected filters.'}</p>
           </div>
         ) : (
-          orders.map((order) => (
-            <motion.div key={order.id} layout className="card overflow-hidden">
-              <div
-                className="px-5 py-4 flex items-center gap-4 cursor-pointer hover:bg-gray-50/50"
-                onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <p className="font-semibold text-gray-900">{order.customerName}</p>
-                    <span className="text-xs text-gray-400">{order.mobileNumber}</span>
-                    {order.source === 'WHATSAPP' && (
-                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full font-medium">
-                        <MessageCircle size={10} /> WhatsApp
+          <>
+            {/* Select-all row */}
+            <div className="flex items-center gap-3 px-2 py-1">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                ref={(el) => { if (el) el.indeterminate = someSelected; }}
+                onChange={toggleSelectAll}
+                className="w-4 h-4 rounded border-gray-300 accent-spice-600 cursor-pointer"
+              />
+              <span className="text-xs text-gray-500">
+                {selectedIds.size > 0 ? `${selectedIds.size} of ${orders.length} selected` : 'Select all'}
+              </span>
+              {selectedIds.size > 0 && (
+                <button onClick={() => setSelectedIds(new Set())} className="text-xs text-gray-400 hover:text-gray-600 ml-1">
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {orders.map((order) => (
+              <motion.div key={order.id} layout className={`card overflow-hidden transition-colors ${selectedIds.has(order.id) ? 'ring-2 ring-amber-400' : ''}`}>
+                <div
+                  className="px-5 py-4 flex items-center gap-3 cursor-pointer hover:bg-gray-50/50"
+                >
+                  {/* Checkbox — stop propagation so it doesn't expand the card */}
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(order.id)}
+                    onChange={(e) => { e.stopPropagation(); toggleSelect(order.id); }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 flex-shrink-0 rounded border-gray-300 accent-spice-600 cursor-pointer"
+                  />
+                  <div
+                    className="flex-1 flex items-center gap-4 min-w-0"
+                    onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <p className="font-semibold text-gray-900">{order.customerName}</p>
+                        <span className="text-xs text-gray-400">{order.mobileNumber}</span>
+                        {order.source === 'WHATSAPP' && (
+                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full font-medium">
+                            <MessageCircle size={10} /> WhatsApp
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-1">
+                        {order.orderItems?.map((i) => `${i.dish?.name} ×${i.quantity}`).join(', ')}
+                      </p>
+                      {order.deliveryNote && (
+                        <p className="text-xs text-amber-600 mt-0.5">📍 {order.deliveryNote}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0 space-y-1">
+                      <p className="font-bold text-gray-900">SEK {Number(order.totalAmount)}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${statusColors[order.status]}`}>
+                        {order.status}
                       </span>
-                    )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-gray-400">{new Date(order.orderDate).toLocaleDateString('sv-SE')}</span>
+                      <ChevronDown size={16} className={`text-gray-400 transition-transform ${expandedId === order.id ? 'rotate-180' : ''}`} />
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-500 line-clamp-1">
-                    {order.orderItems?.map((i) => `${i.dish?.name} ×${i.quantity}`).join(', ')}
-                  </p>
-                  {order.deliveryNote && (
-                    <p className="text-xs text-amber-600 mt-0.5">📍 {order.deliveryNote}</p>
-                  )}
                 </div>
-                <div className="text-right flex-shrink-0 space-y-1">
-                  <p className="font-bold text-gray-900">SEK {Number(order.totalAmount)}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${statusColors[order.status]}`}>
-                    {order.status}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-gray-400">{new Date(order.orderDate).toLocaleDateString('sv-SE')}</span>
-                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${expandedId === order.id ? 'rotate-180' : ''}`} />
-                </div>
-              </div>
 
               {expandedId === order.id && (
                 <motion.div
@@ -400,9 +479,29 @@ export default function AdminOrdersPage() {
                 </motion.div>
               )}
             </motion.div>
-          ))
+            ))}
+          </>
         )}
       </div>
+
+      {/* Consolidated Dish Summary */}
+      {!loading && dishSummary.length > 0 && (
+        <div className="card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <CheckSquare size={16} className="text-spice-500" />
+            <h2 className="font-display font-bold text-gray-900 text-base">Preparation Summary</h2>
+            <span className="text-xs text-gray-400 ml-1">— total dishes across all {tab} orders</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {dishSummary.map(({ name, qty }) => (
+              <div key={name} className="flex flex-col items-center justify-center bg-spice-50 border border-spice-100 rounded-xl px-3 py-3 text-center">
+                <span className="text-2xl font-bold text-spice-600">{qty}</span>
+                <span className="text-xs text-gray-600 mt-0.5 leading-tight">{name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Add WhatsApp Order Modal */}
       <AnimatePresence>

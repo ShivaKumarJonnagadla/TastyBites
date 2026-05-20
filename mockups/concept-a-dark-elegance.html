@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Concept A — Dark Elegance | Tasty Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dark: #A07820;
+    --dark: #111418;
+    --dark2: #1C2128;
+    --dark3: #252D37;
+    --cream: #F5F0E8;
+    --text-muted: #8B9299;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--dark); color: #E8E0D0; overflow-x: hidden; }
+
+  /* NAVBAR */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(17, 20, 24, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px; height: 68px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 12px; }
+  .nav-logo-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: var(--dark);
+  }
+  .nav-logo-text { display: flex; flex-direction: column; }
+  .nav-logo-title { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px; color: var(--cream); line-height: 1.1; }
+  .nav-logo-sub { font-size: 10px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+  .nav-links { display: flex; align-items: center; gap: 32px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: #9BA3AB; text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover, .nav-link.active { color: var(--cream); }
+  .nav-link.active { color: var(--gold); }
+  .nav-story-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 18px; border-radius: 24px;
+    border: 1px solid var(--gold); color: var(--gold);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    background: rgba(201, 168, 76, 0.08);
+    transition: all 0.2s;
+  }
+  .nav-story-btn:hover { background: rgba(201, 168, 76, 0.18); }
+  .nav-right { display: flex; align-items: center; gap: 16px; }
+  .cart-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--dark3); border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; color: var(--cream);
+    font-size: 18px;
+  }
+  .cart-badge {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--gold); color: var(--dark);
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lang-btn {
+    padding: 6px 14px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #9BA3AB; font-size: 12px; font-weight: 600; cursor: pointer;
+    background: transparent;
+  }
+
+  /* HERO */
+  .hero {
+    position: relative; min-height: 92vh;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #0D0F12 0%, #1a1208 40%, #0D0F12 100%);
+  }
+  .hero-pattern {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image: repeating-linear-gradient(45deg, var(--gold) 0, var(--gold) 1px, transparent 0, transparent 50%);
+    background-size: 20px 20px;
+  }
+  .hero-img {
+    position: absolute; inset: 0; object-fit: cover; width: 100%; height: 100%;
+    opacity: 0.22;
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,15,18,0.95) 0%, rgba(13,15,18,0.4) 50%, rgba(13,15,18,0.7) 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2; text-align: center; max-width: 720px; padding: 0 24px;
+  }
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(201, 168, 76, 0.12); border: 1px solid rgba(201, 168, 76, 0.3);
+    color: var(--gold); padding: 8px 20px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .hero-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 88px); font-weight: 700;
+    color: var(--cream); line-height: 1.05; margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+  .hero-title span { color: var(--gold); font-style: italic; }
+  .hero-divider {
+    display: flex; align-items: center; gap: 16px; justify-content: center; margin: 16px 0;
+  }
+  .hero-divider-line { flex: 1; max-width: 80px; height: 1px; background: var(--gold); opacity: 0.4; }
+  .hero-divider-icon { color: var(--gold); font-size: 18px; }
+  .hero-subtitle { font-size: 16px; color: rgba(232, 224, 208, 0.6); font-weight: 300; margin-bottom: 40px; letter-spacing: 1px; }
+  .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn-gold {
+    padding: 16px 36px; border-radius: 4px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--dark); font-weight: 700; font-size: 14px; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; border: none;
+    box-shadow: 0 4px 24px rgba(201, 168, 76, 0.3);
+    transition: all 0.2s;
+  }
+  .btn-outline {
+    padding: 15px 36px; border-radius: 4px;
+    border: 1px solid rgba(201, 168, 76, 0.5);
+    color: var(--cream); font-weight: 600; font-size: 14px; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; background: transparent;
+  }
+  .hero-stats {
+    position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 48px; z-index: 2;
+  }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--gold); font-weight: 700; }
+  .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+
+  /* SECTION SHARED */
+  .section { padding: 80px 48px; max-width: 1280px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 56px; }
+  .section-tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif; font-size: 42px; font-weight: 700;
+    color: var(--cream); margin-bottom: 12px;
+  }
+  .section-sub { color: var(--text-muted); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+  /* CATEGORY FILTER */
+  .filters {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .filter-chip {
+    padding: 9px 22px; border-radius: 4px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted); background: var(--dark2);
+    transition: all 0.2s;
+  }
+  .filter-chip.active {
+    background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: 700;
+  }
+  .filter-chip:hover:not(.active) { border-color: var(--gold); color: var(--gold); }
+
+  /* DISH GRID */
+  .dish-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+  .dish-card {
+    background: var(--dark2); border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: all 0.3s;
+    position: relative;
+  }
+  .dish-card:hover { transform: translateY(-6px); border-color: rgba(201, 168, 76, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .dish-img-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; }
+  .dish-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .dish-card:hover .dish-img { transform: scale(1.06); }
+  .dish-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,15,18,0.9) 0%, transparent 50%);
+  }
+  .dish-badge {
+    position: absolute; top: 14px; left: 14px;
+    padding: 4px 10px; border-radius: 3px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-veg { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+  .badge-nonveg { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+  .dish-name-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 20px 16px 16px;
+    font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600;
+    color: var(--cream); line-height: 1.2;
+  }
+  .dish-body { padding: 14px 16px 16px; }
+  .dish-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+  .dish-footer { display: flex; align-items: center; justify-content: space-between; }
+  .dish-price { font-size: 20px; font-weight: 700; color: var(--cream); }
+  .dish-price span { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-right: 2px; }
+  .add-btn {
+    width: 36px; height: 36px; border-radius: 4px;
+    background: var(--gold); color: var(--dark);
+    border: none; cursor: pointer; font-size: 22px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { background: var(--gold-light); transform: scale(1.1); }
+
+  /* REVIEWS — marquee style */
+  .reviews-section { padding: 80px 0; background: var(--dark2); }
+  .reviews-inner { max-width: 1280px; margin: 0 auto; padding: 0 48px; }
+  .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+  .review-card {
+    background: var(--dark3); border-radius: 8px; padding: 28px;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .review-quote { font-size: 48px; color: var(--gold); opacity: 0.3; line-height: 1; margin-bottom: -16px; font-family: Georgia, serif; }
+  .review-text { font-size: 14px; line-height: 1.7; color: rgba(232,224,208,0.75); font-style: italic; margin-bottom: 20px; }
+  .review-author { display: flex; align-items: center; gap: 12px; }
+  .review-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px; color: var(--dark);
+  }
+  .review-name { font-size: 13px; font-weight: 600; color: var(--cream); }
+  .review-badge { font-size: 11px; color: var(--text-muted); }
+  .stars { color: var(--gold); font-size: 13px; letter-spacing: 1px; margin-bottom: 8px; }
+
+  /* LABEL TAG */
+  .concept-label {
+    position: fixed; top: 80px; right: 20px; z-index: 999;
+    background: var(--gold); color: var(--dark);
+    padding: 8px 18px; border-radius: 6px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(201,168,76,0.4);
+  }
+
+  /* CLOUD BANNER */
+  .cloud-banner {
+    background: rgba(201, 168, 76, 0.08);
+    border-top: 1px solid rgba(201, 168, 76, 0.15);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+    padding: 20px 48px; text-align: center;
+    display: flex; align-items: center; justify-content: center; gap: 32px;
+    flex-wrap: wrap;
+  }
+  .cloud-item { display: flex; align-items: center; gap: 10px; }
+  .cloud-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  .cloud-text { font-size: 13px; color: rgba(232,224,208,0.7); }
+  .cloud-text b { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<div class="concept-label">Concept A — Dark Elegance</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">TB</div>
+    <div class="nav-logo-text">
+      <span class="nav-logo-title">Tasty Bites</span>
+      <span class="nav-logo-sub">Authentic Indian</span>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link active" href="#">Home</a>
+    <a class="nav-link" href="#">Menu</a>
+    <a class="nav-link" href="#">Friday Special</a>
+    <a class="nav-link" href="#">Reviews</a>
+    <a class="nav-link" href="#">FAQ</a>
+    <a class="nav-link" href="#">Contact</a>
+    <div class="nav-story-btn">▶&nbsp; Our Story</div>
+  </div>
+  <div class="nav-right">
+    <button class="lang-btn">EN | SV</button>
+    <div class="cart-btn">🛒<span class="cart-badge">3</span></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern"></div>
+  <img class="hero-img" src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1600&q=80" alt="" />
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-pill"><span class="hero-pill-dot"></span> Älmhult · Sweden <span class="hero-pill-dot"></span></div>
+    <h1 class="hero-title">Taste the<br/><span>Soul of India</span></h1>
+    <div class="hero-divider">
+      <div class="hero-divider-line"></div>
+      <div class="hero-divider-icon">✦</div>
+      <div class="hero-divider-line"></div>
+    </div>
+    <p class="hero-subtitle">Authentic home-cooked Indian cuisine · Cloud kitchen · Pickup & Delivery</p>
+    <div class="hero-ctas">
+      <button class="btn-gold">Order Now</button>
+      <button class="btn-outline">WhatsApp Us</button>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">5.0</div><div class="stat-label">Google Rating</div></div>
+    <div class="stat"><div class="stat-num">30+</div><div class="stat-label">Dishes</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Halal</div></div>
+  </div>
+</div>
+
+<!-- CLOUD KITCHEN BANNER -->
+<div class="cloud-banner">
+  <div class="cloud-item"><div class="cloud-dot"></div><span class="cloud-text">☁️ <b>Cloud Kitchen</b> — Pickup &amp; Delivery only</span></div>
+  <div class="cloud-item"><div class="cloud-dot"></div><span class="cloud-text">🕐 <b>1 Day</b> advance notice required</span></div>
+  <div class="cloud-item"><div class="cloud-dot"></div><span class="cloud-text">🍽️ Minimum <b>2 portions</b> per dish</span></div>
+  <div class="cloud-item"><div class="cloud-dot"></div><span class="cloud-text">💬 WhatsApp: <b>+46 769677497</b></span></div>
+</div>
+
+<!-- MENU SECTION -->
+<div style="background: var(--dark)">
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">✦ Our Menu ✦</div>
+      <h2 class="section-title">All Dishes</h2>
+      <p class="section-sub">Every dish made fresh to order with authentic Indian spices</p>
+    </div>
+    <div class="filters">
+      <div class="filter-chip active">All</div>
+      <div class="filter-chip">Specialities</div>
+      <div class="filter-chip">Starters</div>
+      <div class="filter-chip">Breakfast</div>
+      <div class="filter-chip">Rice</div>
+      <div class="filter-chip">Drinks</div>
+      <div class="filter-chip">Snacks</div>
+      <div class="filter-chip">🌿 Vegetarian</div>
+    </div>
+    <div class="dish-grid">
+      <!-- Card 1 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1563379091339-03246963d96c?w=400&h=500&fit=crop" alt="" />
+          <div class="dish-img-overlay"></div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="dish-name-overlay">Dindigul Chicken Biriyani</div>
+        </div>
+        <div class="dish-body">
+          <p class="dish-desc">Famous Dindigul-style dum biriyani with tender chicken and aromatic spices</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 100</div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 2 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1528975604071-b4dc52a2d18c?w=400&h=500&fit=crop" alt="" />
+          <div class="dish-img-overlay"></div>
+          <div class="dish-badge badge-veg">🌿 Veg</div>
+          <div class="dish-name-overlay">Dindigul Veg Biriyani</div>
+        </div>
+        <div class="dish-body">
+          <p class="dish-desc">Fragrant Dindigul-style dum biriyani with fresh vegetables and aromatic spices</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 85</div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 3 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=400&h=500&fit=crop" alt="" />
+          <div class="dish-img-overlay"></div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="dish-name-overlay">Hyderabad Chicken Dhum Biriyani</div>
+        </div>
+        <div class="dish-body">
+          <p class="dish-desc">Authentic Hyderabadi dum biriyani with juicy chicken and fragrant basmati</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 100</div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+      <!-- Card 4 -->
+      <div class="dish-card">
+        <div class="dish-img-wrap">
+          <img class="dish-img" src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d6?w=400&h=500&fit=crop" alt="" />
+          <div class="dish-img-overlay"></div>
+          <div class="dish-badge badge-nonveg">● Non-Veg</div>
+          <div class="dish-name-overlay">Chicken 65</div>
+        </div>
+        <div class="dish-body">
+          <p class="dish-desc">Crispy deep-fried spiced chicken — a South Indian classic starter</p>
+          <div class="dish-footer">
+            <div class="dish-price"><span>SEK</span> 80</div>
+            <button class="add-btn">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<div class="reviews-section">
+  <div class="reviews-inner">
+    <div class="section-header">
+      <div class="section-tag">✦ Testimonials ✦</div>
+      <h2 class="section-title">What Customers Say</h2>
+      <p class="section-sub">Real reviews from Google — 5.0 ★ rating</p>
+    </div>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">Älmhult Kalaset 2025 witnessed the arrival of a new star in town — Tasty Bites! The Dindigul Chicken Biryani had killer flavors. This is a home away from home vibe. Highly recommend!</p>
+        <div class="review-author">
+          <div class="review-avatar">A</div>
+          <div>
+            <div class="review-name">Aaliya Badar Ahamed</div>
+            <div class="review-badge">Local Guide · 27 reviews · 8 months ago</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">Finding Indian food in Sweden is like finding the Titanic diamond in the ocean — but I found one! Tastybites is the only spot that truly delivers authentic flavors of India.</p>
+        <div class="review-author">
+          <div class="review-avatar">S</div>
+          <div>
+            <div class="review-name">Sheik Zayed</div>
+            <div class="review-badge">Local Guide · 18 reviews · 7 months ago</div>
+          </div>
+        </div>
+      </div>
+      <div class="review-card">
+        <div class="review-quote">"</div>
+        <div class="stars">★★★★★</div>
+        <p class="review-text">One of the best Indian food I ever had in Sweden. The moment I took my first bite, it reminded me of home. People are also very sweet and helpful. Highly recommended!</p>
+        <div class="review-author">
+          <div class="review-avatar">N</div>
+          <div>
+            <div class="review-name">Nikhil BG</div>
+            <div class="review-badge">1 review · 6 months ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

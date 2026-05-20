@@ -104,8 +104,28 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
       include: { orderItems: { include: { dish: true } } },
     });
 
+    // Build consolidated dish summary for the notification email
+    const allActiveOrders = await prisma.order.findMany({
+      where: { archivedAt: null },
+      include: { orderItems: { include: { dish: { select: { name: true } } } } },
+    });
+    const dishTotals = new Map<string, number>();
+    for (const o of allActiveOrders) {
+      for (const item of o.orderItems) {
+        const name = item.dish.name;
+        dishTotals.set(name, (dishTotals.get(name) ?? 0) + item.quantity);
+      }
+    }
+    const dishSummary = Array.from(dishTotals.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, totalQty]) => ({ name, totalQty }));
+
     // Send email notifications asynchronously (don't block response)
-    sendOrderConfirmationEmail(order as unknown as Parameters<typeof sendOrderConfirmationEmail>[0], email || null).catch(() => {});
+    sendOrderConfirmationEmail(
+      order as unknown as Parameters<typeof sendOrderConfirmationEmail>[0],
+      email || null,
+      dishSummary,
+    ).catch(() => {});
 
     res.status(201).json({
       success: true,
@@ -242,6 +262,23 @@ export async function archiveFridayOrders(req: Request, res: Response, next: Nex
   }
 }
 
+export async function archiveSelectedOrders(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { ids } = req.body as { ids: string[] };
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ success: false, message: 'No order IDs provided' });
+      return;
+    }
+    await prisma.order.updateMany({
+      where: { id: { in: ids }, archivedAt: null },
+      data: { archivedAt: new Date() },
+    });
+    res.json({ success: true, archived: ids.length, message: `${ids.length} order(s) archived` });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const order = await prisma.order.findUnique({
@@ -329,54 +366,78 @@ export async function exportOrders(req: Request, res: Response, next: NextFuncti
     workbook.creator = 'Tasty Bites';
     workbook.created = new Date();
 
-    // Orders sheet
-    const ordersSheet = workbook.addWorksheet('Orders', {
+    // ── Tab 1: Customer Orders (one row per order-item) ──────────────────────
+    const ordersSheet = workbook.addWorksheet('Customer Orders', {
       views: [{ state: 'frozen', ySplit: 1 }],
     });
 
     ordersSheet.columns = [
-      { header: 'Order ID', key: 'id', width: 38 },
       { header: 'Date', key: 'date', width: 20 },
       { header: 'Customer Name', key: 'customerName', width: 25 },
       { header: 'Mobile', key: 'mobileNumber', width: 20 },
-      { header: 'Items', key: 'items', width: 50 },
-      { header: 'Total (SEK)', key: 'total', width: 15 },
+      { header: 'Dish', key: 'dish', width: 35 },
+      { header: 'Qty', key: 'qty', width: 8 },
+      { header: 'Unit Price (SEK)', key: 'unitPrice', width: 18 },
+      { header: 'Line Total (SEK)', key: 'lineTotal', width: 18 },
+      { header: 'Order Total (SEK)', key: 'orderTotal', width: 18 },
       { header: 'Payment', key: 'payment', width: 12 },
       { header: 'Status', key: 'status', width: 15 },
+      { header: 'Source', key: 'source', width: 12 },
     ];
 
-    ordersSheet.getRow(1).font = { bold: true };
-    ordersSheet.getRow(1).fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFE8521A' },
-    };
-    ordersSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    const headerRow1 = ordersSheet.getRow(1);
+    headerRow1.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC2185B' } };
 
     orders.forEach((order) => {
-      const itemsStr = order.orderItems
-        .map((i) => `${i.dish.name} x${i.quantity} (${Number(i.price) * i.quantity} SEK)`)
-        .join(', ');
-
-      ordersSheet.addRow({
-        id: order.id,
-        date: new Date(order.orderDate).toLocaleString('sv-SE'),
-        customerName: order.customerName,
-        mobileNumber: order.mobileNumber,
-        items: itemsStr,
-        total: Number(order.totalAmount),
-        payment: order.paymentMethod,
-        status: order.status,
+      order.orderItems.forEach((item, idx) => {
+        ordersSheet.addRow({
+          date: idx === 0 ? new Date(order.orderDate).toLocaleString('sv-SE') : '',
+          customerName: idx === 0 ? order.customerName : '',
+          mobileNumber: idx === 0 ? order.mobileNumber : '',
+          dish: item.dish.name,
+          qty: item.quantity,
+          unitPrice: Number(item.price),
+          lineTotal: Number(item.price) * item.quantity,
+          orderTotal: idx === 0 ? Number(order.totalAmount) : '',
+          payment: idx === 0 ? order.paymentMethod : '',
+          status: idx === 0 ? order.status : '',
+          source: idx === 0 ? (order.source ?? 'WEBSITE') : '',
+        });
       });
     });
 
-    // Summary sheet
-    const summarySheet = workbook.addWorksheet('Summary');
-    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
-    summarySheet.addRow(['Total Orders', orders.length]);
-    summarySheet.addRow(['Total Revenue (SEK)', totalRevenue]);
-    summarySheet.addRow(['Swish Orders', orders.filter((o) => o.paymentMethod === 'SWISH').length]);
-    summarySheet.addRow(['Cash Orders', orders.filter((o) => o.paymentMethod === 'CASH').length]);
+    // ── Tab 2: Dish Preparation Summary ──────────────────────────────────────
+    const summarySheet = workbook.addWorksheet('Dish Preparation Summary', {
+      views: [{ state: 'frozen', ySplit: 1 }],
+    });
+
+    summarySheet.columns = [
+      { header: 'Dish Name', key: 'dish', width: 40 },
+      { header: 'Total Qty Ordered', key: 'totalQty', width: 20 },
+      { header: 'Total Revenue (SEK)', key: 'totalRevenue', width: 22 },
+    ];
+
+    const headerRow2 = summarySheet.getRow(1);
+    headerRow2.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC2185B' } };
+
+    const dishMap = new Map<string, { totalQty: number; totalRevenue: number }>();
+    for (const order of orders) {
+      for (const item of order.orderItems) {
+        const existing = dishMap.get(item.dish.name) ?? { totalQty: 0, totalRevenue: 0 };
+        dishMap.set(item.dish.name, {
+          totalQty: existing.totalQty + item.quantity,
+          totalRevenue: existing.totalRevenue + Number(item.price) * item.quantity,
+        });
+      }
+    }
+
+    Array.from(dishMap.entries())
+      .sort((a, b) => b[1].totalQty - a[1].totalQty)
+      .forEach(([dish, stats]) => {
+        summarySheet.addRow({ dish, totalQty: stats.totalQty, totalRevenue: stats.totalRevenue });
+      });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=tastybites-orders-${Date.now()}.xlsx`);

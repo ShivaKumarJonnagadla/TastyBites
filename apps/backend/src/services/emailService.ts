@@ -4,6 +4,7 @@ import { logger } from '../utils/logger';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM || 'TastyBites <onboarding@resend.dev>';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || '';
+const NOTIFY_EMAIL = 'gurulakshmi25@gmail.com';
 
 interface OrderItem {
   dish: { name: string };
@@ -21,7 +22,9 @@ interface Order {
   orderItems: OrderItem[];
 }
 
-function buildOrderHtml(order: Order, forCustomer = false): string {
+interface DishSummaryEntry { name: string; totalQty: number }
+
+function buildOrderHtml(order: Order, forCustomer = false, dishSummary?: DishSummaryEntry[]): string {
   const itemsHtml = order.orderItems
     .map(
       (item) =>
@@ -81,6 +84,25 @@ function buildOrderHtml(order: Order, forCustomer = false): string {
         <p style="margin:0 0 6px;font-size:13px;font-weight:600;color:#C2185B;">📍 Pickup Instructions</p>
         <p style="margin:0;font-size:13px;color:#555;line-height:1.6;">${order.pickupMessage}</p>
       </div>` : ''}
+      ${!forCustomer && dishSummary && dishSummary.length > 0 ? `
+      <div style="margin-top:28px;border-top:2px solid #f0f0f0;padding-top:24px;">
+        <h3 style="margin:0 0 12px;font-size:15px;color:#111;font-weight:700;">📊 Live Preparation Summary</h3>
+        <p style="margin:0 0 12px;font-size:12px;color:#9ca3af;">Total dishes ordered across all active orders after this new order:</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f9fafb;">
+              <th style="padding:7px 12px;text-align:left;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;">Dish</th>
+              <th style="padding:7px 12px;text-align:right;font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;">Total Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dishSummary.map((d) => `<tr>
+              <td style="padding:7px 12px;border-bottom:1px solid #f5f5f5;font-size:13px;color:#374151;">${d.name}</td>
+              <td style="padding:7px 12px;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:700;color:#C2185B;text-align:right;">×${d.totalQty}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : ''}
       ${adminLink}
     </div>
     <div style="background:#f9fafb;padding:16px;text-align:center;border-top:1px solid #f0f0f0;">
@@ -92,8 +114,14 @@ function buildOrderHtml(order: Order, forCustomer = false): string {
 </html>`;
 }
 
-export async function sendOrderConfirmationEmail(order: Order, customerEmail?: string | null): Promise<void> {
+export async function sendOrderConfirmationEmail(
+  order: Order,
+  customerEmail?: string | null,
+  dishSummary?: DishSummaryEntry[],
+): Promise<void> {
   const sends: Promise<unknown>[] = [];
+  const adminHtml = buildOrderHtml(order, false, dishSummary);
+  const subject = `🍛 New Order — ${order.customerName} — SEK ${Number(order.totalAmount)}`;
 
   // Always notify admin
   if (ADMIN_EMAIL) {
@@ -101,11 +129,21 @@ export async function sendOrderConfirmationEmail(order: Order, customerEmail?: s
       resend.emails.send({
         from: FROM,
         to: ADMIN_EMAIL,
-        subject: `🍛 New Order — ${order.customerName} — SEK ${Number(order.totalAmount)}`,
-        html: buildOrderHtml(order, false),
+        subject,
+        html: adminHtml,
       }).catch((err) => logger.error('Failed to send admin email:', err))
     );
   }
+
+  // Always notify the kitchen/preparation email
+  sends.push(
+    resend.emails.send({
+      from: FROM,
+      to: NOTIFY_EMAIL,
+      subject,
+      html: adminHtml,
+    }).catch((err) => logger.error('Failed to send notify email:', err))
+  );
 
   // Send confirmation to customer if they provided email
   if (customerEmail) {
