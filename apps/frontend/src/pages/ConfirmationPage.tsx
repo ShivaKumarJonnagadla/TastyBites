@@ -7,13 +7,28 @@ import { useTranslation } from 'react-i18next';
 import { orderApi } from '../lib/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
+interface OrderItem {
+  dish: { name: string };
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  customerName: string;
+  totalAmount: number;
+  paymentMethod: string;
+  pickupMessage?: string | null;
+  orderItems: OrderItem[];
+}
+
 export default function ConfirmationPage() {
   const { orderId } = useParams();
   const location = useLocation();
   const { t } = useTranslation();
   const confettiRef = useRef(false);
 
-  const [order, setOrder] = useState<Record<string, unknown> | null>(location.state?.order ?? null);
+  const [order, setOrder] = useState<Order | null>(location.state?.order ?? null);
   const merged: boolean = location.state?.merged ?? false;
   const [fetching, setFetching] = useState(!location.state?.order);
 
