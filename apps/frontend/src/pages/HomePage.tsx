@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, ChevronDown, Phone, Clock, MapPin, MessageCircle, Info } from 'lucide-react';
@@ -80,8 +80,12 @@ const faqs = [
   { q: 'Do you have vegetarian options?', a: 'Absolutely! We have a wide range of South Indian vegetarian dishes. Look for the green leaf icon.' },
 ];
 
+// Stop hero video at this timestamp and loop back to start (hides logo/contact end section)
+const VIDEO_STOP_AT_SECS = 34;
+
 export default function HomePage() {
   const { t, i18n } = useTranslation();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [allDishes, setAllDishes] = useState<Dish[]>([]);
   const [fridayDishes, setFridayDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,6 +128,19 @@ export default function HomePage() {
     fetchDishes();
   }, []);
 
+  // Trim the last VIDEO_TRIM_END_SECS of the video so logo/contact section is hidden
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const handleTimeUpdate = () => {
+      if (video.currentTime >= VIDEO_STOP_AT_SECS) {
+        video.currentTime = 0;
+      }
+    };
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, []);
+
   return (
     <div className="overflow-x-hidden">
       {/* Hero Section */}
@@ -131,6 +148,7 @@ export default function HomePage() {
         {/* Video Background */}
         <div className="absolute inset-0 bg-gray-950" />
         <video
+          ref={videoRef}
           className="absolute inset-0 w-full h-full object-cover opacity-40"
           autoPlay
           muted
@@ -167,6 +185,21 @@ export default function HomePage() {
           >
             <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-sm font-medium px-5 py-2 rounded-full border border-white/30">
               {greeting}
+            </span>
+          </motion.div>
+
+          {/* 5-Star Rating Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.05 }}
+            className="flex justify-center mb-5"
+          >
+            <span className="inline-flex items-center gap-2 bg-yellow-400/20 backdrop-blur-sm border border-yellow-400/40 text-yellow-200 text-sm font-semibold px-5 py-2 rounded-full shadow-lg">
+              {[1,2,3,4,5].map((i) => (
+                <Star key={i} size={13} className="fill-yellow-300 text-yellow-300" />
+              ))}
+              <span className="ml-0.5">5-Star Rated Indian Food in Älmhult</span>
             </span>
           </motion.div>
 
