@@ -16,6 +16,7 @@ const router = Router();
 const dishSchema = z.object({
   name: z.string().min(2).max(100),
   description: z.string().min(5).max(500),
+  descriptionSv: z.string().max(500).optional().default(''),
   ingredients: z.string().min(3).max(1000),
   ingredientsSv: z.string().min(3).max(1000),
   pieces: z.number().int().positive().nullable().optional(),
