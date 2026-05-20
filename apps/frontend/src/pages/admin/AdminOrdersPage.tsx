@@ -73,7 +73,7 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const params: Record<string, string | boolean> = { limit: 200 };
+      const params: Record<string, string | boolean | number> = { limit: 200 };
       if (tab === 'archived') params.archived = true;
       if (startDate) params.startDate = startDate;
       if (endDate) params.endDate = endDate;
