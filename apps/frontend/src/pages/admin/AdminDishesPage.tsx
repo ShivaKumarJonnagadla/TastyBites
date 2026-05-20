@@ -84,6 +84,23 @@ function nextFridayLabel(): string {
   return d.toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 }
 
+function nextFridayDatetimeLocal(): string {
+  const d = new Date();
+  const daysUntilFriday = (5 - d.getDay() + 7) % 7 || 7;
+  d.setDate(d.getDate() + daysUntilFriday);
+  d.setHours(12, 0, 0, 0);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatDeliveryTime(datetimeLocal: string): string {
+  if (!datetimeLocal) return '';
+  const d = new Date(datetimeLocal);
+  const dateStr = d.toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const timeStr = d.toLocaleTimeString('en-SE', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return `${dateStr} · ${timeStr}`;
+}
+
 export default function AdminDishesPage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,7 +113,7 @@ export default function AdminDishesPage() {
   const [menuTypeFilter, setMenuTypeFilter] = useState<'ALL' | 'DAILY' | 'FRIDAY' | 'BOTH'>('ALL');
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfLocationId, setPdfLocationId] = useState('kry');
-  const [pdfDeliveryTime, setPdfDeliveryTime] = useState('');
+  const [pdfDeliveryTime, setPdfDeliveryTime] = useState(nextFridayDatetimeLocal);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -848,14 +865,19 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Time</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Delivery Date &amp; Time</label>
                   <input
-                    type="text"
+                    type="datetime-local"
                     value={pdfDeliveryTime}
                     onChange={(e) => setPdfDeliveryTime(e.target.value)}
-                    placeholder="e.g. Friday 23 May · 12:00 – 14:00"
+                    min={new Date().toISOString().slice(0, 16)}
                     className="input-field"
                   />
+                  {pdfDeliveryTime && (
+                    <p className="text-xs text-spice-600 font-medium mt-1.5 ml-0.5">
+                      {formatDeliveryTime(pdfDeliveryTime)}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 bg-spice-50 rounded-xl p-3">
                   <span className="text-xs text-spice-700">
@@ -872,11 +894,11 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                 </button>
                 <button
                   onClick={() => {
-                    if (!pdfDeliveryTime.trim()) return;
+                    if (!pdfDeliveryTime) return;
                     setShowPDFModal(false);
-                    handleExportPDF(pdfLocationId, pdfDeliveryTime);
+                    handleExportPDF(pdfLocationId, formatDeliveryTime(pdfDeliveryTime));
                   }}
-                  disabled={!pdfDeliveryTime.trim()}
+                  disabled={!pdfDeliveryTime}
                   className="flex items-center gap-2 px-5 py-2 bg-spice-500 text-white rounded-xl text-sm font-semibold hover:bg-spice-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
                   <FileDown size={15} /> Generate PDF
