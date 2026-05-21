@@ -344,8 +344,8 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo-wrap{background:rgba(255,255,255,0.92);border-radius:10px;padding:5px 10px;display:inline-flex;align-items:center;justify-content:center;}
 .logo-img{height:48px;width:auto;object-fit:contain;}
-.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
-.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;margin-bottom:7px;}
+.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;}
 .header-right{text-align:right;flex-shrink:0;}
 .week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:2px;}
 .week-num{font-size:32px;font-weight:700;line-height:1.1;margin-bottom:3px;}
@@ -362,7 +362,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .dish-info{flex:1;min-width:0;}
 .dish-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
 .dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;flex:1;}
-.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-block;text-align:center;vertical-align:middle;line-height:14px;}
 .dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:6px;}
 .dish-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
 .veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
