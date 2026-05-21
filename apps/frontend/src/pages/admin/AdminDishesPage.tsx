@@ -826,6 +826,29 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     </select>
                   </div>
 
+                  {/* Spice Selection — shown inline when Friday / Both is selected */}
+                  {(watchedMenuType === 'FRIDAY' || watchedMenuType === 'BOTH') && (
+                    <div className="md:col-span-2 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-orange-900">🌶️ Enable Customer Spice Selection</p>
+                          <p className="text-xs text-orange-700 mt-0.5">Customers will choose Low / Medium / Spicy when adding to cart</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input {...register('allowSpiceSelection')} type="checkbox" className="sr-only peer" />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-orange-500 peer-focus:ring-2 peer-focus:ring-orange-300 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        </label>
+                      </div>
+                      {watchedAllowSpice && (
+                        <div className="mt-3 flex gap-2">
+                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-200">Low 🟢</span>
+                          <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full border border-orange-200">Medium 🌶️</span>
+                          <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full border border-red-200">Spicy 🔥</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Spice Level */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Spice Level *</label>
@@ -870,29 +893,6 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                       <span className="text-sm font-medium text-gray-700">✅ Available</span>
                     </label>
                   </div>
-
-                  {/* Spice Selection (only for Friday / Both) */}
-                  {(watchedMenuType === 'FRIDAY' || watchedMenuType === 'BOTH') && (
-                    <div className="md:col-span-2 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-semibold text-orange-900">🌶️ Enable Customer Spice Selection</p>
-                          <p className="text-xs text-orange-700 mt-0.5">Customers will choose Low / Medium / Spicy when adding to cart</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input {...register('allowSpiceSelection')} type="checkbox" className="sr-only peer" />
-                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-orange-500 peer-focus:ring-2 peer-focus:ring-orange-300 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
-                        </label>
-                      </div>
-                      {watchedAllowSpice && (
-                        <div className="mt-3 flex gap-2">
-                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-200">Low 🟢</span>
-                          <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full border border-orange-200">Medium 🌶️</span>
-                          <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full border border-red-200">Spicy 🔥</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-3 mt-8">
