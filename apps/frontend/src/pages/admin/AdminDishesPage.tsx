@@ -353,8 +353,8 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 /* DISHES */
 .dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 36px;}
 .dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);}
-.dish-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#f5edf0;}
-.dish-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.dish-img-wrap{position:relative;width:100%;height:130px;overflow:hidden;background:#f5edf0;}
+.dish-img-wrap img{width:100%;height:130px;object-fit:cover;display:block;}
 .price-badge{position:absolute;bottom:10px;right:10px;background:#C2185B;color:#fff;font-size:14px;font-weight:700;padding:4px 13px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25);}
 .veg-badge,.nonveg-badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;}
 .veg-badge{background:rgba(255,255,255,.9);color:#166534;border:1px solid #BBF7D0;}
