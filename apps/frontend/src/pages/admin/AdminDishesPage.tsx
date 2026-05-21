@@ -360,15 +360,15 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .dish-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
 .dish-thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid #F2E4E8;}
 .dish-info{flex:1;min-width:0;}
-.dish-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
+.dish-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;}
 .dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;flex:1;}
-.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-block;text-align:center;vertical-align:middle;line-height:14px;}
+.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:0 10px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-block;height:20px;line-height:20px;text-align:center;}
 .dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:6px;}
 .dish-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
+.veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:0 8px;border-radius:999px;display:inline-block;height:18px;line-height:18px;text-align:center;}
 .veg-badge{background:#f0fdf4;color:#166534;border:1px solid #BBF7D0;}
 .nonveg-badge{background:#fef2f2;color:#991B1B;border:1px solid #FECACA;}
-.spice-tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9.5px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:3px 7px;border-radius:4px;font-weight:600;}
+.spice-tag{display:inline-block;font-size:9.5px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:0 7px;border-radius:4px;font-weight:600;height:18px;line-height:18px;text-align:center;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
 .ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10px;color:#444;line-height:1.55;}
