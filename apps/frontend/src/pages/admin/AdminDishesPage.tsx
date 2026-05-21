@@ -312,15 +312,15 @@ export default function AdminDishesPage() {
         <div class="dish-top">
           <img class="dish-thumb" src="${imageCache[dish.id] || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" />
           <div class="dish-info">
-            <div class="dish-title-row">
-              <h3 class="dish-name">${dish.name}</h3>
-              <span class="price-badge">SEK ${Number(dish.price)}</span>
-            </div>
+            <h3 class="dish-name">${dish.name}</h3>
             <p class="dish-desc">${dish.description}</p>
-            <div class="dish-tags">
-              <span class="spice-tag">${spiceLabel(dish.spiceLevel)}</span>
-              <span class="${dish.isVegetarian ? 'veg-badge' : 'nonveg-badge'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</span>
-            </div>
+            <p class="dish-meta">
+              <span class="dish-price">SEK ${Number(dish.price)}</span>
+              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
+              <span class="dish-spice">${spiceLabel(dish.spiceLevel)}</span>
+              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
+              <span class="${dish.isVegetarian ? 'dish-veg' : 'dish-nonveg'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</span>
+            </p>
           </div>
         </div>
         <div class="ing-section">
@@ -360,15 +360,14 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .dish-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
 .dish-thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid #F2E4E8;}
 .dish-info{flex:1;min-width:0;}
-.dish-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;}
-.dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;flex:1;}
-.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:0 10px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-block;height:20px;line-height:20px;text-align:center;}
-.dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:6px;}
-.dish-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:0 8px;border-radius:999px;display:inline-block;height:18px;line-height:18px;text-align:center;}
-.veg-badge{background:#f0fdf4;color:#166534;border:1px solid #BBF7D0;}
-.nonveg-badge{background:#fef2f2;color:#991B1B;border:1px solid #FECACA;}
-.spice-tag{display:inline-block;font-size:9.5px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:0 7px;border-radius:4px;font-weight:600;height:18px;line-height:18px;text-align:center;}
+.dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;margin-bottom:3px;}
+.dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:5px;}
+.dish-meta{font-size:10px;color:#555;}
+.dish-price{font-size:12px;font-weight:800;color:#C2185B;}
+.dish-dot{color:#ccc;}
+.dish-spice{font-size:10px;color:#7A4F00;}
+.dish-veg{font-size:10px;font-weight:700;color:#166534;}
+.dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
 .ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10px;color:#444;line-height:1.55;}
