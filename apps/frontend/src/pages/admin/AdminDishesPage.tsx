@@ -347,9 +347,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
 .tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
 .header-right{text-align:right;flex-shrink:0;}
-.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:1px;}
-.week-num{font-size:40px;font-weight:700;line-height:1;}
-.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:2px;}
+.week-num{font-size:32px;font-weight:700;line-height:1.1;margin-bottom:3px;}
+.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;}
 /* INFO STRIP */
 .info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F2D4DE;padding:8px 36px;display:flex;align-items:center;gap:28px;font-size:11.5px;color:#7A6055;}
 .info-strip b{color:#C2185B;}
@@ -362,13 +362,13 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .dish-info{flex:1;min-width:0;}
 .dish-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:3px;}
 .dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;flex:1;}
-.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;flex-shrink:0;white-space:nowrap;}
+.price-badge{background:#C2185B;color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;flex-shrink:0;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 .dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:6px;}
 .dish-tags{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:999px;}
+.veg-badge,.nonveg-badge{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 .veg-badge{background:#f0fdf4;color:#166534;border:1px solid #BBF7D0;}
 .nonveg-badge{background:#fef2f2;color:#991B1B;border:1px solid #FECACA;}
-.spice-tag{display:inline-block;font-size:9.5px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:2px 7px;border-radius:4px;font-weight:600;}
+.spice-tag{display:inline-flex;align-items:center;justify-content:center;line-height:1;font-size:9.5px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:3px 7px;border-radius:4px;font-weight:600;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
 .ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10px;color:#444;line-height:1.55;}
@@ -379,7 +379,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .footer-col{padding:14px 18px;}
 .footer-col-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C2185B;margin-bottom:8px;}
 .footer-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
-.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;line-height:16px;text-align:center;display:inline-block;flex-shrink:0;}
 .footer-step p{font-size:10.5px;color:#555;line-height:1.5;}
 .footer-step p b{color:#1a1a1a;}
 .footer-contact-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
