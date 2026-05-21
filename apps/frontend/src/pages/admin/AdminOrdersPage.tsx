@@ -10,6 +10,7 @@ interface Dish {
   price: number;
   menuType: string;
   isAvailable: boolean;
+  allowSpiceSelection?: boolean;
 }
 
 interface Order {
@@ -24,7 +25,7 @@ interface Order {
   archivedAt: string | null;
   deliveryNote: string | null;
   notes: string | null;
-  orderItems: { dish: { name: string; price: number; menuType: string }; quantity: number; price: number }[];
+  orderItems: { dish: { name: string; price: number; menuType: string; allowSpiceSelection?: boolean }; quantity: number; price: number; selectedSpiceLevel?: string | null }[];
 }
 
 const statusColors: Record<string, string> = {
@@ -37,7 +38,7 @@ const statusColors: Record<string, string> = {
 
 const STATUSES = ['PENDING', 'PREPARING', 'READY', 'COMPLETED', 'CANCELLED'];
 
-interface ManualOrderItem { dishId: string; quantity: number }
+interface ManualOrderItem { dishId: string; quantity: number; selectedSpiceLevel?: string }
 
 const emptyForm = () => ({
   customerName: '',
@@ -181,13 +182,18 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Consolidated dish summary from current orders
+  // Consolidated dish summary from current orders — grouped by dish + spice level
+  const SPICE_LABEL: Record<string, string> = { LOW: 'Low 🟢', MEDIUM: 'Medium 🌶️', SPICY: 'Spicy 🔥' };
+
   const dishSummary = useMemo(() => {
     const map = new Map<string, number>();
     for (const order of orders) {
       for (const item of order.orderItems) {
         const name = item.dish?.name;
-        if (name) map.set(name, (map.get(name) ?? 0) + item.quantity);
+        if (!name) continue;
+        const spice = item.selectedSpiceLevel;
+        const key = spice ? `${name} – ${SPICE_LABEL[spice] || spice}` : name;
+        map.set(key, (map.get(key) ?? 0) + item.quantity);
       }
     }
     return Array.from(map.entries())
@@ -203,6 +209,13 @@ export default function AdminOrdersPage() {
       if (existing) return { ...f, items: f.items.map((i) => i.dishId === dishId ? { ...i, quantity: qty } : i) };
       return { ...f, items: [...f.items, { dishId, quantity: qty }] };
     });
+  };
+
+  const setItemSpice = (dishId: string, spice: string) => {
+    setForm((f) => ({
+      ...f,
+      items: f.items.map((i) => i.dishId === dishId ? { ...i, selectedSpiceLevel: spice } : i),
+    }));
   };
 
   const getItemQty = (dishId: string) => form.items.find((i) => i.dishId === dishId)?.quantity ?? 0;
@@ -413,7 +426,12 @@ export default function AdminOrdersPage() {
                       <div className="space-y-1">
                         {order.orderItems?.map((item, i) => (
                           <div key={i} className="flex justify-between text-sm">
-                            <span className="text-gray-700">{item.dish?.name} × {item.quantity}</span>
+                            <span className="text-gray-700">
+                              {item.dish?.name} × {item.quantity}
+                              {item.selectedSpiceLevel && (
+                                <span className="ml-1.5 text-xs text-orange-600 font-medium">({{'LOW':'Low 🟢','MEDIUM':'Medium 🌶️','SPICY':'Spicy 🔥'}[item.selectedSpiceLevel] || item.selectedSpiceLevel})</span>
+                              )}
+                            </span>
                             <span className="font-medium">SEK {Number(item.price) * item.quantity}</span>
                           </div>
                         ))}
@@ -591,24 +609,44 @@ export default function AdminOrdersPage() {
                       <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                         {fridayDishes.map((dish) => {
                           const qty = getItemQty(dish.id);
+                          const formItem = form.items.find((i) => i.dishId === dish.id);
                           return (
-                            <div key={dish.id} className={`flex items-center justify-between px-3 py-2.5 rounded-xl border transition-colors ${qty > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}`}>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-800 truncate">{dish.name}</p>
-                                <p className="text-xs text-gray-500">SEK {dish.price}</p>
+                            <div key={dish.id} className={`rounded-xl border transition-colors ${qty > 0 ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}`}>
+                              <div className="flex items-center justify-between px-3 py-2.5">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-800 truncate">{dish.name}</p>
+                                  <p className="text-xs text-gray-500">SEK {dish.price}</p>
+                                </div>
+                                <div className="flex items-center gap-2 ml-3">
+                                  <button
+                                    onClick={() => setItemQty(dish.id, qty - 1)}
+                                    disabled={qty === 0}
+                                    className="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-700 font-bold disabled:opacity-30 hover:bg-gray-50 flex items-center justify-center"
+                                  >−</button>
+                                  <span className="text-sm font-semibold w-5 text-center">{qty}</span>
+                                  <button
+                                    onClick={() => setItemQty(dish.id, qty + 1)}
+                                    className="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 flex items-center justify-center"
+                                  >+</button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 ml-3">
-                                <button
-                                  onClick={() => setItemQty(dish.id, qty - 1)}
-                                  disabled={qty === 0}
-                                  className="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-700 font-bold disabled:opacity-30 hover:bg-gray-50 flex items-center justify-center"
-                                >−</button>
-                                <span className="text-sm font-semibold w-5 text-center">{qty}</span>
-                                <button
-                                  onClick={() => setItemQty(dish.id, qty + 1)}
-                                  className="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-700 font-bold hover:bg-gray-50 flex items-center justify-center"
-                                >+</button>
-                              </div>
+                              {/* Spice selector for qualifying dishes */}
+                              {qty > 0 && dish.allowSpiceSelection && (
+                                <div className="px-3 pb-2.5 flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">Spice:</span>
+                                  {[{v:'LOW',l:'Low 🟢'},{v:'MEDIUM',l:'Med 🌶️'},{v:'SPICY',l:'Spicy 🔥'}].map((opt) => (
+                                    <button
+                                      key={opt.v}
+                                      onClick={() => setItemSpice(dish.id, opt.v)}
+                                      className={`text-xs px-2 py-1 rounded-lg border font-medium transition-all ${
+                                        formItem?.selectedSpiceLevel === opt.v
+                                          ? 'bg-orange-500 text-white border-orange-500'
+                                          : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
+                                      }`}
+                                    >{opt.l}</button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           );
                         })}

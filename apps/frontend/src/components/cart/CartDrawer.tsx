@@ -117,6 +117,11 @@ export default function CartDrawer() {
 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{item.dish.name}</p>
+                        {item.selectedSpiceLevel && (
+                          <span className="inline-block text-xs font-medium text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded-full mb-0.5">
+                            {{LOW: 'Low 🟢', MEDIUM: 'Medium 🌶️', SPICY: 'Spicy 🔥'}[item.selectedSpiceLevel] || item.selectedSpiceLevel}
+                          </span>
+                        )}
                         <p className="text-sm text-spice-500 font-medium">
                           SEK {item.dish.price * item.quantity}
                         </p>

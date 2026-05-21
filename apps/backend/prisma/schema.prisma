@@ -59,11 +59,12 @@ model Dish {
   pieces        Int?
   price         Decimal     @db.Decimal(10, 2)
   imageUrl      String?
-  isAvailable   Boolean     @default(true)
-  menuType      MenuType    @default(DAILY)
-  isVegetarian  Boolean     @default(false)
-  spiceLevel    SpiceLevel  @default(MEDIUM)
-  category      String      @default("Other")
+  isAvailable         Boolean     @default(true)
+  menuType            MenuType    @default(DAILY)
+  isVegetarian        Boolean     @default(false)
+  spiceLevel          SpiceLevel  @default(MEDIUM)
+  allowSpiceSelection Boolean     @default(false)
+  category            String      @default("Other")
   deletedAt     DateTime?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -100,13 +101,14 @@ model Order {
 }
 
 model OrderItem {
-  id       String  @id @default(uuid())
-  orderId  String
-  dishId   String
-  quantity Int
-  price    Decimal @db.Decimal(10, 2)
-  order    Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  dish     Dish    @relation(fields: [dishId], references: [id])
+  id                 String  @id @default(uuid())
+  orderId            String
+  dishId             String
+  quantity           Int
+  price              Decimal @db.Decimal(10, 2)
+  selectedSpiceLevel String?
+  order              Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dish               Dish    @relation(fields: [dishId], references: [id])
 
   @@index([orderId])
   @@index([dishId])

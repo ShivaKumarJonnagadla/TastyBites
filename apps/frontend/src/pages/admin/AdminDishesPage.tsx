@@ -23,6 +23,7 @@ interface Dish {
   menuType: string;
   isVegetarian: boolean;
   spiceLevel: string;
+  allowSpiceSelection: boolean;
   category: string;
 }
 
@@ -39,6 +40,7 @@ const schema = z.object({
   menuType: z.enum(['DAILY', 'FRIDAY', 'BOTH']),
   isVegetarian: z.boolean(),
   spiceLevel: z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT']),
+  allowSpiceSelection: z.boolean(),
   category: z.string().min(2),
 });
 
@@ -57,6 +59,7 @@ const defaultValues: FormData = {
   menuType: 'DAILY',
   isVegetarian: false,
   spiceLevel: 'MEDIUM',
+  allowSpiceSelection: false,
   category: 'Curry',
 };
 
@@ -125,6 +128,8 @@ export default function AdminDishesPage() {
   });
 
   const imageUrl = watch('imageUrl');
+  const watchedMenuType = watch('menuType');
+  const watchedAllowSpice = watch('allowSpiceSelection');
 
   const fetchDishes = async () => {
     try {
@@ -160,6 +165,7 @@ export default function AdminDishesPage() {
       menuType: dish.menuType as 'DAILY' | 'FRIDAY' | 'BOTH',
       isVegetarian: dish.isVegetarian,
       spiceLevel: dish.spiceLevel as 'MILD' | 'MEDIUM' | 'HOT' | 'EXTRA_HOT',
+      allowSpiceSelection: dish.allowSpiceSelection,
       category: dish.category,
     });
     setShowForm(true);
@@ -664,6 +670,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                         <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded-full">
                           🌶️ {dish.spiceLevel}
                         </span>
+                        {dish.allowSpiceSelection && (
+                          <span className="text-xs px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded-full" title="Customers choose spice level">🌶️ Ask</span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{dish.category}</td>
@@ -851,7 +860,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                   </div>
 
                   {/* Toggles */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex flex-wrap items-center gap-6">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input {...register('isVegetarian')} type="checkbox" className="w-4 h-4 text-spice-500 rounded" />
                       <span className="text-sm font-medium text-gray-700">🌿 Vegetarian</span>
@@ -861,6 +870,29 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                       <span className="text-sm font-medium text-gray-700">✅ Available</span>
                     </label>
                   </div>
+
+                  {/* Spice Selection (only for Friday / Both) */}
+                  {(watchedMenuType === 'FRIDAY' || watchedMenuType === 'BOTH') && (
+                    <div className="md:col-span-2 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-semibold text-orange-900">🌶️ Enable Customer Spice Selection</p>
+                          <p className="text-xs text-orange-700 mt-0.5">Customers will choose Low / Medium / Spicy when adding to cart</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input {...register('allowSpiceSelection')} type="checkbox" className="sr-only peer" />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-orange-500 peer-focus:ring-2 peer-focus:ring-orange-300 transition-all after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+                        </label>
+                      </div>
+                      {watchedAllowSpice && (
+                        <div className="mt-3 flex gap-2">
+                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full border border-green-200">Low 🟢</span>
+                          <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-semibold rounded-full border border-orange-200">Medium 🌶️</span>
+                          <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full border border-red-200">Spicy 🔥</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 mt-8">

@@ -8,17 +8,19 @@ export interface CartDish {
   imageUrl: string | null;
   isVegetarian: boolean;
   category: string;
+  allowSpiceSelection: boolean;
 }
 
 export interface CartItem {
   dish: CartDish;
   quantity: number;
+  selectedSpiceLevel?: string; // only set when dish.allowSpiceSelection is true
 }
 
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (dish: CartDish) => void;
+  addItem: (dish: CartDish, selectedSpiceLevel?: string) => void;
   removeItem: (dishId: string) => void;
   updateQuantity: (dishId: string, quantity: number) => void;
   clearCart: () => void;
@@ -35,7 +37,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
-      addItem: (dish) => {
+      addItem: (dish, selectedSpiceLevel) => {
         set((state) => {
           const existing = state.items.find((i) => i.dish.id === dish.id);
           if (existing) {
@@ -45,7 +47,16 @@ export const useCartStore = create<CartStore>()(
               ),
             };
           }
-          return { items: [...state.items, { dish, quantity: 1 }] };
+          return {
+            items: [
+              ...state.items,
+              {
+                dish,
+                quantity: 1,
+                ...(selectedSpiceLevel ? { selectedSpiceLevel } : {}),
+              },
+            ],
+          };
         });
       },
 

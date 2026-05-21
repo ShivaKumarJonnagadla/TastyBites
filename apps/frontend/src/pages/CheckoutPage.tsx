@@ -50,6 +50,7 @@ export default function CheckoutPage() {
           dishId: item.dish.id,
           quantity: item.quantity,
           price: item.dish.price,
+          ...(item.selectedSpiceLevel ? { selectedSpiceLevel: item.selectedSpiceLevel } : {}),
         })),
       };
 
@@ -249,6 +250,11 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{item.dish.name}</p>
+                        {item.selectedSpiceLevel && (
+                          <span className="text-xs text-orange-600">
+                            {{LOW: 'Low 🟢', MEDIUM: 'Medium 🌶️', SPICY: 'Spicy 🔥'}[item.selectedSpiceLevel] || item.selectedSpiceLevel}
+                          </span>
+                        )}
                         <p className="text-xs text-gray-500">x{item.quantity}</p>
                       </div>
                       <p className="text-sm font-semibold text-gray-900">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Minus, ShoppingCart, Flame, Leaf } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Minus, ShoppingCart, Flame, Leaf, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../../store/cartStore';
 import toast from 'react-hot-toast';
@@ -19,6 +19,7 @@ interface Dish {
   menuType: string;
   isVegetarian: boolean;
   spiceLevel: string;
+  allowSpiceSelection: boolean;
   category: string;
 }
 
@@ -41,11 +42,24 @@ const spiceLevelKeys: Record<string, string> = {
   EXTRA_HOT: 'dish.spice.extraHot',
 };
 
+const CUSTOMER_SPICE_OPTIONS = [
+  { value: 'LOW', label: 'Low 🟢', color: 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200' },
+  { value: 'MEDIUM', label: 'Medium 🌶️', color: 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200' },
+  { value: 'SPICY', label: 'Spicy 🔥', color: 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200' },
+];
+
+const CUSTOMER_SPICE_LABELS: Record<string, string> = {
+  LOW: 'Low 🟢',
+  MEDIUM: 'Medium 🌶️',
+  SPICY: 'Spicy 🔥',
+};
+
 const FALLBACK_IMG = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop&auto=format';
 
 export default function DishCard({ dish, readOnly = false }: Props) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgSrc, setImgSrc] = useState(dish.imageUrl || FALLBACK_IMG);
+  const [showSpicePicker, setShowSpicePicker] = useState(false);
   const { items, addItem, updateQuantity } = useCartStore();
   const { i18n, t } = useTranslation();
 
@@ -55,7 +69,7 @@ export default function DishCard({ dish, readOnly = false }: Props) {
   const description = i18n.language === 'sv' ? (dish.descriptionSv || dish.description) : dish.description;
   const ingredients = i18n.language === 'sv' ? dish.ingredientsSv : dish.ingredients;
 
-  const handleAdd = () => {
+  const handleAdd = (selectedSpiceLevel?: string) => {
     addItem({
       id: dish.id,
       name: dish.name,
@@ -63,9 +77,19 @@ export default function DishCard({ dish, readOnly = false }: Props) {
       imageUrl: imgSrc,
       isVegetarian: dish.isVegetarian,
       category: dish.category,
-    });
+      allowSpiceSelection: dish.allowSpiceSelection,
+    }, selectedSpiceLevel);
     if (!cartItem) {
       toast.success(`${dish.name} added to cart! 🛒`, { duration: 2000 });
+    }
+    setShowSpicePicker(false);
+  };
+
+  const handleAddClick = () => {
+    if (dish.allowSpiceSelection && !cartItem) {
+      setShowSpicePicker(true);
+    } else {
+      handleAdd();
     }
   };
 
@@ -158,40 +182,83 @@ export default function DishCard({ dish, readOnly = false }: Props) {
             quantity === 0 ? (
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={handleAdd}
+                onClick={handleAddClick}
                 className="flex items-center gap-2 px-4 py-2 bg-spice-500 text-white rounded-xl text-sm font-semibold hover:bg-spice-600 active:bg-spice-700 transition-all shadow-warm"
               >
                 <ShoppingCart size={15} />
                 {t('menu.addToCart')}
               </motion.button>
             ) : (
-              <div className="flex items-center gap-3 bg-spice-50 rounded-xl px-3 py-2">
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={handleDecrease}
-                  className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-spice-500 hover:bg-spice-500 hover:text-white transition-all"
-                >
-                  <Minus size={14} />
-                </motion.button>
-                <motion.span
-                  key={quantity}
-                  initial={{ scale: 1.3 }}
-                  animate={{ scale: 1 }}
-                  className="text-sm font-bold text-spice-600 w-5 text-center"
-                >
-                  {quantity}
-                </motion.span>
-                <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={handleAdd}
-                  className="w-7 h-7 rounded-lg bg-spice-500 shadow-sm flex items-center justify-center text-white hover:bg-spice-600 transition-all"
-                >
-                  <Plus size={14} />
-                </motion.button>
+              <div className="flex flex-col items-end gap-1">
+                {cartItem?.selectedSpiceLevel && (
+                  <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                    {CUSTOMER_SPICE_LABELS[cartItem.selectedSpiceLevel] || cartItem.selectedSpiceLevel}
+                  </span>
+                )}
+                <div className="flex items-center gap-3 bg-spice-50 rounded-xl px-3 py-2">
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={handleDecrease}
+                    className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-spice-500 hover:bg-spice-500 hover:text-white transition-all"
+                  >
+                    <Minus size={14} />
+                  </motion.button>
+                  <motion.span
+                    key={quantity}
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    className="text-sm font-bold text-spice-600 w-5 text-center"
+                  >
+                    {quantity}
+                  </motion.span>
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={handleAdd}
+                    className="w-7 h-7 rounded-lg bg-spice-500 shadow-sm flex items-center justify-center text-white hover:bg-spice-600 transition-all"
+                  >
+                    <Plus size={14} />
+                  </motion.button>
+                </div>
               </div>
             )
           )}
         </div>
+
+        {/* Spice Level Picker */}
+        <AnimatePresence>
+          {showSpicePicker && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="mt-3 p-3 bg-orange-50 border border-orange-100 rounded-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-semibold text-orange-800">🌶️ Choose spice level:</p>
+                  <button
+                    onClick={() => setShowSpicePicker(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  {CUSTOMER_SPICE_OPTIONS.map((opt) => (
+                    <motion.button
+                      key={opt.value}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleAdd(opt.value)}
+                      className={`flex-1 py-2 px-2 rounded-lg text-xs font-semibold border transition-all ${opt.color}`}
+                    >
+                      {opt.label}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

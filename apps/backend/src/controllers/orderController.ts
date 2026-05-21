@@ -20,12 +20,13 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
 
     // Calculate total using actual prices
     const dishMap = new Map(dishes.map((d) => [d.id, d]));
-    const orderItems = items.map((item: { dishId: string; quantity: number }) => {
+    const orderItems = items.map((item: { dishId: string; quantity: number; selectedSpiceLevel?: string }) => {
       const dish = dishMap.get(item.dishId)!;
       return {
         dishId: item.dishId,
         quantity: item.quantity,
         price: Number(dish.price),
+        selectedSpiceLevel: item.selectedSpiceLevel || null,
       };
     });
 
@@ -227,9 +228,14 @@ export async function createManualOrder(req: Request, res: Response, next: NextF
     }
 
     const dishMap = new Map(dishes.map((d) => [d.id, d]));
-    const orderItems = items.map((item: { dishId: string; quantity: number }) => {
+    const orderItems = items.map((item: { dishId: string; quantity: number; selectedSpiceLevel?: string }) => {
       const dish = dishMap.get(item.dishId)!;
-      return { dishId: item.dishId, quantity: item.quantity, price: Number(dish.price) };
+      return {
+        dishId: item.dishId,
+        quantity: item.quantity,
+        price: Number(dish.price),
+        selectedSpiceLevel: item.selectedSpiceLevel || null,
+      };
     });
 
     const totalAmount = orderItems.reduce(
@@ -437,6 +443,7 @@ export async function exportOrders(req: Request, res: Response, next: NextFuncti
 
     summarySheet.columns = [
       { header: 'Dish Name', key: 'dish', width: 40 },
+      { header: 'Spice Level', key: 'spice', width: 18 },
       { header: 'Total Qty Ordered', key: 'totalQty', width: 20 },
       { header: 'Total Revenue (SEK)', key: 'totalRevenue', width: 22 },
     ];
@@ -445,21 +452,27 @@ export async function exportOrders(req: Request, res: Response, next: NextFuncti
     headerRow2.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     headerRow2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFC2185B' } };
 
-    const dishMap = new Map<string, { totalQty: number; totalRevenue: number }>();
+    const dishMap2 = new Map<string, { totalQty: number; totalRevenue: number }>();
     for (const order of orders) {
       for (const item of order.orderItems) {
-        const existing = dishMap.get(item.dish.name) ?? { totalQty: 0, totalRevenue: 0 };
-        dishMap.set(item.dish.name, {
+        const spice = (item as unknown as { selectedSpiceLevel?: string | null }).selectedSpiceLevel;
+        const key = spice ? `${item.dish.name}|||${spice}` : `${item.dish.name}|||`;
+        const existing = dishMap2.get(key) ?? { totalQty: 0, totalRevenue: 0 };
+        dishMap2.set(key, {
           totalQty: existing.totalQty + item.quantity,
           totalRevenue: existing.totalRevenue + Number(item.price) * item.quantity,
         });
       }
     }
 
-    Array.from(dishMap.entries())
+    const spiceLabelMap: Record<string, string> = { LOW: 'Low', MEDIUM: 'Medium', SPICY: 'Spicy' };
+
+    Array.from(dishMap2.entries())
       .sort((a, b) => b[1].totalQty - a[1].totalQty)
-      .forEach(([dish, stats]) => {
-        summarySheet.addRow({ dish, totalQty: stats.totalQty, totalRevenue: stats.totalRevenue });
+      .forEach(([key, stats]) => {
+        const [dish, spiceRaw] = key.split('|||');
+        const spice = spiceRaw ? (spiceLabelMap[spiceRaw] || spiceRaw) : '—';
+        summarySheet.addRow({ dish, spice, totalQty: stats.totalQty, totalRevenue: stats.totalRevenue });
       });
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

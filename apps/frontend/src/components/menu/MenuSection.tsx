@@ -21,6 +21,7 @@ interface Dish {
   menuType: string;
   isVegetarian: boolean;
   spiceLevel: string;
+  allowSpiceSelection: boolean;
   category: string;
 }
 
