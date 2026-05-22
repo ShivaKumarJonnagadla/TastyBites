@@ -335,6 +335,80 @@ export async function getOrder(req: Request, res: Response, next: NextFunction):
   }
 }
 
+export async function deleteOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    if (!order) return next(new AppError('Order not found', 404));
+
+    // Cascade delete order items then the order
+    await prisma.orderItem.deleteMany({ where: { orderId: req.params.id } });
+    await prisma.order.delete({ where: { id: req.params.id } });
+
+    res.json({ success: true, message: 'Order deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function editOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { customerName, mobileNumber, paymentMethod, notes, items } = req.body;
+
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { orderItems: true },
+    });
+    if (!order) return next(new AppError('Order not found', 404));
+
+    // If items provided, recalculate order items
+    if (items && Array.isArray(items)) {
+      const dishIds = [...new Set<string>(items.map((i: { dishId: string }) => i.dishId))];
+      const dishes = await prisma.dish.findMany({ where: { id: { in: dishIds }, deletedAt: null } });
+      if (dishes.length !== dishIds.length) return next(new AppError('One or more dishes not found', 400));
+
+      const dishMap = new Map(dishes.map((d) => [d.id, d]));
+      const newItems = items.map((item: { dishId: string; quantity: number; spiceLevel?: string }) => ({
+        dishId: item.dishId,
+        quantity: item.quantity,
+        price: Number(dishMap.get(item.dishId)!.price),
+        ...(item.spiceLevel ? { spiceLevel: item.spiceLevel } : {}),
+      }));
+      const newTotal = newItems.reduce((s: number, i: { quantity: number; price: number }) => s + i.price * i.quantity, 0);
+
+      // Replace all order items
+      await prisma.orderItem.deleteMany({ where: { orderId: req.params.id } });
+      await prisma.orderItem.createMany({ data: newItems.map((i) => ({ ...i, orderId: req.params.id })) });
+
+      const updated = await prisma.order.update({
+        where: { id: req.params.id },
+        data: {
+          ...(customerName && { customerName }),
+          ...(mobileNumber && { mobileNumber }),
+          ...(paymentMethod && { paymentMethod }),
+          ...(notes !== undefined && { notes }),
+          totalAmount: newTotal,
+        },
+        include: { orderItems: { include: { dish: true } } },
+      });
+      res.json({ success: true, data: updated, message: 'Order updated' });
+    } else {
+      const updated = await prisma.order.update({
+        where: { id: req.params.id },
+        data: {
+          ...(customerName && { customerName }),
+          ...(mobileNumber && { mobileNumber }),
+          ...(paymentMethod && { paymentMethod }),
+          ...(notes !== undefined && { notes }),
+        },
+        include: { orderItems: { include: { dish: true } } },
+      });
+      res.json({ success: true, data: updated, message: 'Order updated' });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function updateOrderStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const { status } = req.body;

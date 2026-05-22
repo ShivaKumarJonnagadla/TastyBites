@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, RefreshCw, Filter, ChevronDown, Plus, MessageCircle, Archive, X, Trash2, CheckSquare } from 'lucide-react';
+import { Download, RefreshCw, Filter, ChevronDown, Plus, MessageCircle, Archive, X, Trash2, CheckSquare, Pencil, Save } from 'lucide-react';
 import { orderApi, dishApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -62,6 +62,10 @@ export default function AdminOrdersPage() {
   const [total, setTotal] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  // Edit order state
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ customerName: string; mobileNumber: string; paymentMethod: 'SWISH' | 'CASH'; notes: string }>({ customerName: '', mobileNumber: '', paymentMethod: 'SWISH', notes: '' });
+
   // Manual order form
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -115,6 +119,38 @@ export default function AdminOrdersPage() {
       fetchOrders();
     } catch {
       toast.error('Failed to update status');
+    }
+  };
+
+  const handleDelete = async (id: string, customerName: string) => {
+    if (!window.confirm(`Delete order for ${customerName}? This cannot be undone.`)) return;
+    try {
+      await orderApi.delete(id);
+      toast.success('Order deleted');
+      fetchOrders();
+    } catch {
+      toast.error('Failed to delete order');
+    }
+  };
+
+  const startEdit = (order: Order) => {
+    setEditingOrderId(order.id);
+    setEditForm({
+      customerName: order.customerName,
+      mobileNumber: order.mobileNumber,
+      paymentMethod: order.paymentMethod as 'SWISH' | 'CASH',
+      notes: order.notes || '',
+    });
+  };
+
+  const saveEdit = async (id: string) => {
+    try {
+      await orderApi.edit(id, editForm);
+      toast.success('Order updated');
+      setEditingOrderId(null);
+      fetchOrders();
+    } catch {
+      toast.error('Failed to update order');
     }
   };
 
@@ -398,8 +434,22 @@ export default function AdminOrdersPage() {
                         {order.status}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-xs text-gray-400">{new Date(order.orderDate).toLocaleDateString('sv-SE')}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); startEdit(order); setExpandedId(order.id); }}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
+                        title="Edit order"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(order.id, order.customerName); }}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                        title="Delete order"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                       <ChevronDown size={16} className={`text-gray-400 transition-transform ${expandedId === order.id ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
@@ -465,6 +515,59 @@ export default function AdminOrdersPage() {
                     </div>
                   </div>
 
+                  {/* Edit Form */}
+                  {editingOrderId === order.id && (
+                    <div className="mb-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                      <p className="text-xs font-semibold text-blue-700 mb-3 uppercase tracking-wide flex items-center gap-1.5"><Pencil size={12} /> Edit Order Details</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Customer Name</label>
+                          <input
+                            className="input-field text-sm py-2"
+                            value={editForm.customerName}
+                            onChange={(e) => setEditForm((f) => ({ ...f, customerName: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Mobile Number</label>
+                          <input
+                            className="input-field text-sm py-2"
+                            value={editForm.mobileNumber}
+                            onChange={(e) => setEditForm((f) => ({ ...f, mobileNumber: e.target.value }))}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Payment Method</label>
+                          <select
+                            className="input-field text-sm py-2"
+                            value={editForm.paymentMethod}
+                            onChange={(e) => setEditForm((f) => ({ ...f, paymentMethod: e.target.value as 'SWISH' | 'CASH' }))}
+                          >
+                            <option value="SWISH">Swish</option>
+                            <option value="CASH">Cash</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-500 mb-1 block">Notes</label>
+                          <input
+                            className="input-field text-sm py-2"
+                            value={editForm.notes}
+                            onChange={(e) => setEditForm((f) => ({ ...f, notes: e.target.value }))}
+                            placeholder="Optional notes..."
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button onClick={() => saveEdit(order.id)} className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all">
+                          <Save size={14} /> Save Changes
+                        </button>
+                        <button onClick={() => setEditingOrderId(null)} className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   {tab === 'active' && (
                     <div>
                       <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">Update Status</p>
@@ -485,6 +588,16 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Delete button at bottom of expanded panel */}
+                  <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+                    <button
+                      onClick={() => handleDelete(order.id, order.customerName)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-all"
+                    >
+                      <Trash2 size={13} /> Delete Order
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </motion.div>

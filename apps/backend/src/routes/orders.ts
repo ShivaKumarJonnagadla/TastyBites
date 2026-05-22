@@ -5,6 +5,8 @@ import {
   getOrders,
   getOrder,
   updateOrderStatus,
+  deleteOrder,
+  editOrder,
   exportOrders,
   getOrderStats,
   archiveFridayOrders,
@@ -58,5 +60,7 @@ router.post('/archive-friday', authenticate, archiveFridayOrders);
 router.post('/archive-selected', authenticate, archiveSelectedOrders);
 router.get('/:id', authenticate, getOrder);
 router.patch('/:id/status', authenticate, updateOrderStatus);
+router.put('/:id', authenticate, editOrder);
+router.delete('/:id', authenticate, deleteOrder);
 
 export default router;

@@ -49,6 +49,8 @@ export const orderApi = {
   createManual: (data: unknown) => api.post('/orders/manual', data),
   archiveFriday: () => api.post('/orders/archive-friday'),
   archiveSelected: (ids: string[]) => api.post('/orders/archive-selected', { ids }),
+  delete: (id: string) => api.delete(`/orders/${id}`),
+  edit: (id: string, data: unknown) => api.put(`/orders/${id}`, data),
 };
 
 // Auth
