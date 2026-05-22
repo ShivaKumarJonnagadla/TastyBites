@@ -9,12 +9,14 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
     const { customerName, mobileNumber, email, paymentMethod, items, notes } = req.body;
 
     // Verify dishes exist and get prices
+    // Deduplicate IDs — same dish can appear multiple times with different spice levels
     const dishIds = items.map((i: { dishId: string }) => i.dishId);
+    const uniqueDishIds = [...new Set<string>(dishIds)];
     const dishes = await prisma.dish.findMany({
-      where: { id: { in: dishIds }, deletedAt: null, isAvailable: true },
+      where: { id: { in: uniqueDishIds }, deletedAt: null, isAvailable: true },
     });
 
-    if (dishes.length !== dishIds.length) {
+    if (dishes.length !== uniqueDishIds.length) {
       return next(new AppError('One or more dishes are unavailable', 400));
     }
 
