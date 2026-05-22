@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { orderLimiter } from '../middleware/rateLimits';
 import {
   createOrder,
   createManualOrder,
@@ -48,8 +49,8 @@ const manualOrderSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal('')),
 });
 
-// Public routes
-router.post('/', validate(orderSchema), createOrder);
+// Public routes (rate limited to 10 orders/hour per IP)
+router.post('/', orderLimiter, validate(orderSchema), createOrder);
 
 // Protected admin routes
 router.get('/', authenticate, getOrders);

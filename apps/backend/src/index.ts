@@ -51,14 +51,8 @@ const limiter = rateLimit({
   message: { success: false, error: 'Too many requests, please try again later.' },
 });
 
-const orderLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10,
-  message: { success: false, error: 'Too many orders placed, please try again later.' },
-});
-
 app.use('/api/', limiter);
-app.use('/api/orders', orderLimiter);
+// Order creation rate limit is applied per-route in orders.ts (POST only)
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
