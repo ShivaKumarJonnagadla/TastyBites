@@ -20,12 +20,13 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
 
     // Calculate total using actual prices
     const dishMap = new Map(dishes.map((d) => [d.id, d]));
-    const orderItems = items.map((item: { dishId: string; quantity: number }) => {
+    const orderItems = items.map((item: { dishId: string; quantity: number; spiceLevel?: string }) => {
       const dish = dishMap.get(item.dishId)!;
       return {
         dishId: item.dishId,
         quantity: item.quantity,
         price: Number(dish.price),
+        ...(item.spiceLevel ? { spiceLevel: item.spiceLevel } : {}),
       };
     });
 
@@ -53,9 +54,11 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
     });
 
     if (existingOrder) {
-      // Merge orders - update quantities or add new items
+      // Merge orders - update quantities or add new items (match by dishId + spiceLevel)
       for (const newItem of orderItems) {
-        const existingItem = existingOrder.orderItems.find((i) => i.dishId === newItem.dishId);
+        const existingItem = existingOrder.orderItems.find(
+          (i) => i.dishId === newItem.dishId && (i.spiceLevel ?? null) === (newItem.spiceLevel ?? null)
+        );
         if (existingItem) {
           await prisma.orderItem.update({
             where: { id: existingItem.id },
@@ -200,6 +203,20 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
       prisma.order.count({ where }),
     ]);
 
+    // Build dish+spiceLevel grouped summary for kitchen view
+    const dishSpiceMap = new Map<string, number>();
+    for (const order of orders) {
+      for (const item of order.orderItems) {
+        const key = item.spiceLevel
+          ? `${item.dish.name} (${item.spiceLevel})`
+          : item.dish.name;
+        dishSpiceMap.set(key, (dishSpiceMap.get(key) ?? 0) + item.quantity);
+      }
+    }
+    const dishSpiceSummary = Array.from(dishSpiceMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .map(([label, totalQty]) => ({ label, totalQty }));
+
     res.json({
       success: true,
       data: orders,
@@ -207,6 +224,7 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
       page: pageNum,
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum),
+      dishSpiceSummary,
     });
   } catch (err) {
     next(err);

@@ -24,7 +24,7 @@ interface Order {
   archivedAt: string | null;
   deliveryNote: string | null;
   notes: string | null;
-  orderItems: { dish: { name: string; price: number; menuType: string }; quantity: number; price: number }[];
+  orderItems: { dish: { name: string; price: number; menuType: string }; quantity: number; price: number; spiceLevel?: string }[];
 }
 
 const statusColors: Record<string, string> = {
@@ -51,6 +51,7 @@ const emptyForm = () => ({
 export default function AdminOrdersPage() {
   const [tab, setTab] = useState<'active' | 'archived'>('active');
   const [orders, setOrders] = useState<Order[]>([]);
+  const [dishSpiceSummary, setDishSpiceSummary] = useState<{ label: string; totalQty: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [archiving, setArchiving] = useState(false);
@@ -83,6 +84,7 @@ export default function AdminOrdersPage() {
       const res = await orderApi.getAll(params);
       setOrders(res.data.data || []);
       setTotal(res.data.total || 0);
+      setDishSpiceSummary(res.data.dishSpiceSummary || []);
     } catch (err: unknown) {
       console.error('Failed to load orders:', err);
       setOrders([]);
@@ -181,13 +183,15 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Consolidated dish summary from current orders
+  // Consolidated dish+spice summary from current orders (client-side, matches filters)
   const dishSummary = useMemo(() => {
     const map = new Map<string, number>();
     for (const order of orders) {
       for (const item of order.orderItems) {
         const name = item.dish?.name;
-        if (name) map.set(name, (map.get(name) ?? 0) + item.quantity);
+        if (!name) continue;
+        const key = item.spiceLevel ? `${name} (${item.spiceLevel.replace('_', ' ')})` : name;
+        map.set(key, (map.get(key) ?? 0) + item.quantity);
       }
     }
     return Array.from(map.entries())
@@ -382,7 +386,7 @@ export default function AdminOrdersPage() {
                         )}
                       </div>
                       <p className="text-xs text-gray-500 line-clamp-1">
-                        {order.orderItems?.map((i) => `${i.dish?.name} ×${i.quantity}`).join(', ')}
+                        {order.orderItems?.map((i) => `${i.dish?.name}${i.spiceLevel ? ` (${i.spiceLevel.replace('_',' ')})` : ''} ×${i.quantity}`).join(', ')}
                       </p>
                       {order.deliveryNote && (
                         <p className="text-xs text-amber-600 mt-0.5">📍 {order.deliveryNote}</p>
@@ -413,7 +417,12 @@ export default function AdminOrdersPage() {
                       <div className="space-y-1">
                         {order.orderItems?.map((item, i) => (
                           <div key={i} className="flex justify-between text-sm">
-                            <span className="text-gray-700">{item.dish?.name} × {item.quantity}</span>
+                            <span className="text-gray-700">
+                              {item.dish?.name} × {item.quantity}
+                              {item.spiceLevel && (
+                                <span className="ml-1.5 text-xs text-orange-500 font-medium">🌶️ {item.spiceLevel.replace('_', ' ')}</span>
+                              )}
+                            </span>
                             <span className="font-medium">SEK {Number(item.price) * item.quantity}</span>
                           </div>
                         ))}

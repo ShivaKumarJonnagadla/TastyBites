@@ -18,6 +18,7 @@ interface Dish {
   menuType: string;
   isVegetarian: boolean;
   spiceLevel: string;
+  availableSpiceLevels: string[];
   category: string;
 }
 

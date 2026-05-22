@@ -50,6 +50,7 @@ export default function CheckoutPage() {
           dishId: item.dish.id,
           quantity: item.quantity,
           price: item.dish.price,
+          ...(item.spiceLevel ? { spiceLevel: item.spiceLevel } : {}),
         })),
       };
 
@@ -236,7 +237,7 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3 max-h-64 overflow-y-auto mb-4">
                   {items.map((item) => (
-                    <div key={item.dish.id} className="flex items-center gap-3">
+                    <div key={`${item.dish.id}::${item.spiceLevel ?? ''}`} className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
                         <img
                           src={item.dish.imageUrl || 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=80&h=80&fit=crop&auto=format'}
@@ -249,7 +250,9 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{item.dish.name}</p>
-                        <p className="text-xs text-gray-500">x{item.quantity}</p>
+                        <p className="text-xs text-gray-500">
+                          x{item.quantity}{item.spiceLevel ? ` · 🌶️ ${item.spiceLevel.replace('_', ' ')}` : ''}
+                        </p>
                       </div>
                       <p className="text-sm font-semibold text-gray-900">
                         SEK {item.dish.price * item.quantity}

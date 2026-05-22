@@ -26,6 +26,7 @@ const dishSchema = z.object({
   menuType: z.enum(['DAILY', 'FRIDAY', 'BOTH']).default('DAILY'),
   isVegetarian: z.boolean().default(false),
   spiceLevel: z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT']).default('MEDIUM'),
+  availableSpiceLevels: z.array(z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT'])).default([]),
   category: z.string().min(2).max(50),
 });
 

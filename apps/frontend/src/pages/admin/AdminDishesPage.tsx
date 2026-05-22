@@ -9,6 +9,13 @@ import { dishApi, uploadApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { DISH_CATEGORIES } from '../../lib/constants';
 
+const SPICE_OPTIONS = [
+  { value: 'MILD', label: '🌿 Mild' },
+  { value: 'MEDIUM', label: '🌶️ Medium' },
+  { value: 'HOT', label: '🌶️🌶️ Hot' },
+  { value: 'EXTRA_HOT', label: '🌶️🌶️🌶️ Extra Hot' },
+];
+
 interface Dish {
   id: string;
   name: string;
@@ -23,6 +30,7 @@ interface Dish {
   menuType: string;
   isVegetarian: boolean;
   spiceLevel: string;
+  availableSpiceLevels: string[];
   category: string;
 }
 
@@ -39,6 +47,7 @@ const schema = z.object({
   menuType: z.enum(['DAILY', 'FRIDAY', 'BOTH']),
   isVegetarian: z.boolean(),
   spiceLevel: z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT']),
+  availableSpiceLevels: z.array(z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT'])).default([]),
   category: z.string().min(2),
 });
 
@@ -57,6 +66,7 @@ const defaultValues: FormData = {
   menuType: 'DAILY',
   isVegetarian: false,
   spiceLevel: 'MEDIUM',
+  availableSpiceLevels: [],
   category: 'Curry',
 };
 
@@ -160,6 +170,7 @@ export default function AdminDishesPage() {
       menuType: dish.menuType as 'DAILY' | 'FRIDAY' | 'BOTH',
       isVegetarian: dish.isVegetarian,
       spiceLevel: dish.spiceLevel as 'MILD' | 'MEDIUM' | 'HOT' | 'EXTRA_HOT',
+      availableSpiceLevels: (dish.availableSpiceLevels || []) as ('MILD' | 'MEDIUM' | 'HOT' | 'EXTRA_HOT')[],
       category: dish.category,
     });
     setShowForm(true);
@@ -812,15 +823,47 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     </select>
                   </div>
 
-                  {/* Spice Level */}
+                  {/* Spice Level (default display) */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Spice Level *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Default Spice Level</label>
                     <select {...register('spiceLevel')} className="input-field">
                       <option value="MILD">🌿 Mild</option>
                       <option value="MEDIUM">🌶️ Medium</option>
                       <option value="HOT">🌶️🌶️ Hot</option>
                       <option value="EXTRA_HOT">🌶️🌶️🌶️ Extra Hot</option>
                     </select>
+                  </div>
+
+                  {/* Available Spice Levels for customer choice */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Customer Spice Choice
+                      <span className="ml-2 text-xs text-gray-400 font-normal">(leave all unchecked = no spice selection for this dish)</span>
+                    </label>
+                    <div className="flex flex-wrap gap-3">
+                      {SPICE_OPTIONS.map((opt) => {
+                        const current = watch('availableSpiceLevels') || [];
+                        const checked = current.includes(opt.value as 'MILD' | 'MEDIUM' | 'HOT' | 'EXTRA_HOT');
+                        return (
+                          <label key={opt.value} className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 cursor-pointer transition-all ${checked ? 'border-spice-500 bg-spice-50 text-spice-700' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              checked={checked}
+                              onChange={(e) => {
+                                const prev = watch('availableSpiceLevels') || [];
+                                if (e.target.checked) {
+                                  setValue('availableSpiceLevels', [...prev, opt.value as 'MILD' | 'MEDIUM' | 'HOT' | 'EXTRA_HOT']);
+                                } else {
+                                  setValue('availableSpiceLevels', prev.filter((v) => v !== opt.value));
+                                }
+                              }}
+                            />
+                            <span className="text-sm font-medium">{opt.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   {/* Image */}

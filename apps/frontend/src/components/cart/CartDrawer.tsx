@@ -103,7 +103,7 @@ export default function CartDrawer() {
                 <AnimatePresence>
                   {items.map((item) => (
                     <motion.div
-                      key={item.dish.id}
+                      key={`${item.dish.id}::${item.spiceLevel ?? ''}`}
                       layout
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -117,6 +117,11 @@ export default function CartDrawer() {
 
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{item.dish.name}</p>
+                        {item.spiceLevel && (
+                          <p className="text-xs text-orange-500 font-medium">
+                            🌶️ {item.spiceLevel.replace('_', ' ')}
+                          </p>
+                        )}
                         <p className="text-sm text-spice-500 font-medium">
                           SEK {item.dish.price * item.quantity}
                         </p>
@@ -124,7 +129,7 @@ export default function CartDrawer() {
 
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => updateQuantity(item.dish.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.dish.id, item.quantity - 1, item.spiceLevel)}
                           className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:border-spice-300 hover:text-spice-500 transition-all"
                         >
                           {item.quantity === 1 ? (
@@ -135,7 +140,7 @@ export default function CartDrawer() {
                         </button>
                         <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.dish.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.dish.id, item.quantity + 1, item.spiceLevel)}
                           className="w-7 h-7 rounded-lg bg-spice-500 flex items-center justify-center text-white hover:bg-spice-600 transition-all"
                         >
                           <Plus size={12} />

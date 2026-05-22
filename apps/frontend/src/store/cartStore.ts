@@ -13,14 +13,20 @@ export interface CartDish {
 export interface CartItem {
   dish: CartDish;
   quantity: number;
+  spiceLevel?: string;
+}
+
+// Unique key per cart entry: same dish in different spice levels = separate items
+export function cartItemKey(dishId: string, spiceLevel?: string) {
+  return spiceLevel ? `${dishId}::${spiceLevel}` : dishId;
 }
 
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (dish: CartDish) => void;
-  removeItem: (dishId: string) => void;
-  updateQuantity: (dishId: string, quantity: number) => void;
+  addItem: (dish: CartDish, spiceLevel?: string) => void;
+  removeItem: (dishId: string, spiceLevel?: string) => void;
+  updateQuantity: (dishId: string, quantity: number, spiceLevel?: string) => void;
   clearCart: () => void;
   toggleCart: () => void;
   openCart: () => void;
@@ -35,31 +41,34 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
-      addItem: (dish) => {
+      addItem: (dish, spiceLevel) => {
         set((state) => {
-          const existing = state.items.find((i) => i.dish.id === dish.id);
+          const key = cartItemKey(dish.id, spiceLevel);
+          const existing = state.items.find((i) => cartItemKey(i.dish.id, i.spiceLevel) === key);
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.dish.id === dish.id ? { ...i, quantity: i.quantity + 1 } : i
+                cartItemKey(i.dish.id, i.spiceLevel) === key ? { ...i, quantity: i.quantity + 1 } : i
               ),
             };
           }
-          return { items: [...state.items, { dish, quantity: 1 }] };
+          return { items: [...state.items, { dish, quantity: 1, spiceLevel }] };
         });
       },
 
-      removeItem: (dishId) =>
-        set((state) => ({ items: state.items.filter((i) => i.dish.id !== dishId) })),
+      removeItem: (dishId, spiceLevel) =>
+        set((state) => ({
+          items: state.items.filter((i) => cartItemKey(i.dish.id, i.spiceLevel) !== cartItemKey(dishId, spiceLevel)),
+        })),
 
-      updateQuantity: (dishId, quantity) => {
+      updateQuantity: (dishId, quantity, spiceLevel) => {
         if (quantity <= 0) {
-          get().removeItem(dishId);
+          get().removeItem(dishId, spiceLevel);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.dish.id === dishId ? { ...i, quantity } : i
+            cartItemKey(i.dish.id, i.spiceLevel) === cartItemKey(dishId, spiceLevel) ? { ...i, quantity } : i
           ),
         }));
       },

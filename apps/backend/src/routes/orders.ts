@@ -26,6 +26,7 @@ const orderSchema = z.object({
       dishId: z.string().uuid(),
       quantity: z.coerce.number().int().min(1).max(20),
       price: z.coerce.number().positive(),
+      spiceLevel: z.enum(['MILD', 'MEDIUM', 'HOT', 'EXTRA_HOT']).optional(),
     })
   ).min(1),
   notes: z.string().max(500).optional().or(z.literal('')),
