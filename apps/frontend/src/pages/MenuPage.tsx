@@ -112,7 +112,7 @@ export default function MenuPage() {
         dishes={filtered}
         isLoading={loading}
         emoji={tabs.find((t) => t.id === activeTab)?.emoji || '🍛'}
-        readOnly={activeTab === 'all'}
+        readOnly={false}
       />
     </div>
   );

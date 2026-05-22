@@ -327,6 +327,7 @@ export default function HomePage() {
         dishes={allDishes}
         isLoading={loading}
         emoji="🍽️"
+        readOnly
       />
 
       {/* Friday Special */}

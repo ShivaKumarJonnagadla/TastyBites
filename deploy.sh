@@ -18,14 +18,14 @@ TARGET=${1:-both}
 deploy_frontend() {
   echo ""
   echo "🚀 Deploying frontend..."
-  npx vercel deploy --cwd apps/frontend --prod --yes
+  (cd apps/frontend && npx vercel deploy --prod --yes)
   echo "✅ Frontend deployed → https://tastybites-almhult.vercel.app"
 }
 
 deploy_backend() {
   echo ""
   echo "🚀 Deploying backend..."
-  npx vercel deploy --cwd apps/backend --prod --yes
+  (cd apps/backend && npx vercel deploy --prod --yes)
   echo "✅ Backend deployed → https://backend-omega-ten-16.vercel.app"
 }
 

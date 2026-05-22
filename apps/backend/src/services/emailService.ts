@@ -138,14 +138,14 @@ export async function sendOrderConfirmationEmail(
   if (ADMIN_EMAIL) {
     sends.push(
       transporter.sendMail({ from: FROM, to: ADMIN_EMAIL, subject, html: adminHtml })
-        .catch((err) => logger.error('Failed to send admin email:', err))
+        .catch((err: unknown) => logger.error('Failed to send admin email:', err))
     );
   }
 
   // Always notify the kitchen/preparation email
   sends.push(
     transporter.sendMail({ from: FROM, to: NOTIFY_EMAIL, subject, html: adminHtml })
-      .catch((err) => logger.error('Failed to send notify email:', err))
+      .catch((err: unknown) => logger.error('Failed to send notify email:', err))
   );
 
   // Send confirmation to customer if they provided email
@@ -156,7 +156,7 @@ export async function sendOrderConfirmationEmail(
         to: customerEmail,
         subject: `✅ Your Tasty Bites order is confirmed! Order #${order.id.slice(0, 8).toUpperCase()}`,
         html: buildOrderHtml(order, true),
-      }).catch((err) => logger.error('Failed to send customer email:', err))
+      }).catch((err: unknown) => logger.error('Failed to send customer email:', err))
     );
   }
 
