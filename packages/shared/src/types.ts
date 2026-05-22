@@ -17,6 +17,7 @@ export interface Dish {
   menuType: MenuType;
   isVegetarian: boolean;
   spiceLevel: SpiceLevel;
+  allowSpiceSelection: boolean;
   category: string;
   createdAt: string;
   updatedAt: string;
@@ -29,6 +30,7 @@ export interface OrderItem {
   dish: Dish;
   quantity: number;
   price: number;
+  selectedSpiceLevel: string | null;
 }
 
 export interface Order {
@@ -76,7 +78,7 @@ export interface CheckoutData {
   customerName: string;
   mobileNumber: string;
   paymentMethod: PaymentMethod;
-  items: { dishId: string; quantity: number; price: number }[];
+  items: { dishId: string; quantity: number; price: number; selectedSpiceLevel?: string }[];
   notes?: string;
 }
 
