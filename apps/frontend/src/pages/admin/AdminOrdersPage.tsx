@@ -397,7 +397,7 @@ export default function AdminOrdersPage() {
             {orders.map((order) => (
               <motion.div key={order.id} layout className={`card overflow-hidden transition-colors ${selectedIds.has(order.id) ? 'ring-2 ring-amber-400' : ''}`}>
                 <div
-                  className="px-5 py-4 flex items-center gap-3 cursor-pointer hover:bg-gray-50/50"
+                  className="px-4 py-3 flex items-start gap-3 hover:bg-gray-50/50"
                 >
                   {/* Checkbox — stop propagation so it doesn't expand the card */}
                   <input
@@ -407,50 +407,61 @@ export default function AdminOrdersPage() {
                     onClick={(e) => e.stopPropagation()}
                     className="w-4 h-4 flex-shrink-0 rounded border-gray-300 accent-spice-600 cursor-pointer"
                   />
-                  <div
-                    className="flex-1 flex items-center gap-4 min-w-0"
-                    onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <p className="font-semibold text-gray-900">{order.customerName}</p>
-                        <span className="text-xs text-gray-400">{order.mobileNumber}</span>
-                        {order.source === 'WHATSAPP' && (
-                          <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full font-medium">
-                            <MessageCircle size={10} /> WhatsApp
-                          </span>
-                        )}
+                  <div className="flex-1 min-w-0">
+                    {/* Row 1: name + amount + chevron */}
+                    <div
+                      className="flex items-start justify-between gap-2 cursor-pointer"
+                      onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-semibold text-gray-900">{order.customerName}</p>
+                          {order.source === 'WHATSAPP' && (
+                            <span className="flex items-center gap-1 text-xs px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full font-medium">
+                              <MessageCircle size={10} /> WA
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400">{order.mobileNumber}</p>
                       </div>
-                      <p className="text-xs text-gray-500 line-clamp-1">
-                        {order.orderItems?.map((i) => `${i.dish?.name}${i.spiceLevel ? ` (${i.spiceLevel.replace('_',' ')})` : ''} ×${i.quantity}`).join(', ')}
-                      </p>
-                      {order.deliveryNote && (
-                        <p className="text-xs text-amber-600 mt-0.5">📍 {order.deliveryNote}</p>
-                      )}
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <p className="font-bold text-gray-900 text-sm">SEK {Number(order.totalAmount)}</p>
+                        <ChevronDown size={16} className={`text-gray-400 transition-transform ${expandedId === order.id ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
-                    <div className="text-right flex-shrink-0 space-y-1">
-                      <p className="font-bold text-gray-900">SEK {Number(order.totalAmount)}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${statusColors[order.status]}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-xs text-gray-400">{new Date(order.orderDate).toLocaleDateString('sv-SE')}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); startEdit(order); setExpandedId(order.id); }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
-                        title="Edit order"
-                      >
-                        <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(order.id, order.customerName); }}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
-                        title="Delete order"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                      <ChevronDown size={16} className={`text-gray-400 transition-transform ${expandedId === order.id ? 'rotate-180' : ''}`} />
+
+                    {/* Row 2: items summary */}
+                    <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                      {order.orderItems?.map((i) => `${i.dish?.name}${i.spiceLevel ? ` (${i.spiceLevel.replace('_',' ')})` : ''} ×${i.quantity}`).join(', ')}
+                    </p>
+                    {order.deliveryNote && (
+                      <p className="text-xs text-amber-600 mt-0.5">📍 {order.deliveryNote}</p>
+                    )}
+
+                    {/* Row 3: status + date + actions */}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${statusColors[order.status]}`}>
+                          {order.status}
+                        </span>
+                        <span className="text-xs text-gray-400">{new Date(order.orderDate).toLocaleDateString('sv-SE')}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); startEdit(order); setExpandedId(order.id); }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all"
+                          title="Edit order"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(order.id, order.customerName); }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                          title="Delete order"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
