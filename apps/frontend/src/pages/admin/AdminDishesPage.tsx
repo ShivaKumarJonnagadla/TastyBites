@@ -273,7 +273,7 @@ export default function AdminDishesPage() {
     }
   };
 
-  const handleExportMenu = async (locationId: string, deliveryTime: string, dishOrder: string[]) => {
+  const handleExportMenu = async (locationId: string, deliveryTime: string, dishOrder: string[], rawDeliveryDate: string) => {
     const selectedDishes = dishOrder.map((id) => dishes.find((d) => d.id === id)).filter(Boolean) as Dish[];
     if (selectedDishes.length === 0) return;
     const loc = DELIVERY_LOCATIONS.find((l) => l.id === locationId) || DELIVERY_LOCATIONS[0];
@@ -309,7 +309,7 @@ export default function AdminDishesPage() {
       }
     }));
 
-    const weekNum = getWeekNumber(new Date());
+    const weekNum = getWeekNumber(rawDeliveryDate ? new Date(rawDeliveryDate) : new Date());
     const fridayLabel = nextFridayLabel();
 
     const spiceLabel = (level: string) => {
@@ -1044,7 +1044,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                       <button
                         onClick={() => {
                           setShowPDFModal(false);
-                          handleExportMenu(pdfLocationId, formatDeliveryTime(pdfDeliveryTime), exportOrder);
+                          handleExportMenu(pdfLocationId, formatDeliveryTime(pdfDeliveryTime), exportOrder, pdfDeliveryTime);
                         }}
                         className="w-full flex items-center justify-center gap-2 py-3 bg-spice-500 hover:bg-spice-600 text-white rounded-xl font-semibold text-sm transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
                       >
