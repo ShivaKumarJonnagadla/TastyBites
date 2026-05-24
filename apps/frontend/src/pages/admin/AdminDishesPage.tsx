@@ -129,6 +129,9 @@ export default function AdminDishesPage() {
   const [pdfLocationId, setPdfLocationId] = useState('kry');
   const [pdfDeliveryTime, setPdfDeliveryTime] = useState(nextFridayDatetimeLocal);
   const [exportOrder, setExportOrder] = useState<string[]>([]);
+  const [fridayDishOrder, setFridayDishOrder] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('tb_fridayDishOrder') || '[]'); } catch { return []; }
+  });
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -149,6 +152,22 @@ export default function AdminDishesPage() {
   };
 
   useEffect(() => { fetchDishes(); }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tb_fridayDishOrder', JSON.stringify(fridayDishOrder));
+  }, [fridayDishOrder]);
+
+  useEffect(() => {
+    if (dishes.length === 0) return;
+    const fridayIds = dishes
+      .filter((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH')
+      .map((d) => d.id);
+    setFridayDishOrder((prev) => {
+      const existing = prev.filter((id) => fridayIds.includes(id));
+      const added = fridayIds.filter((id) => !prev.includes(id));
+      return [...existing, ...added];
+    });
+  }, [dishes]);
 
   const openCreate = () => {
     setEditing(null);
@@ -238,6 +257,17 @@ export default function AdminDishesPage() {
     return matchesSearch && matchesMenu;
   });
 
+  const sortedFiltered = menuTypeFilter === 'FRIDAY'
+    ? [...filtered].sort((a, b) => {
+        const ai = fridayDishOrder.indexOf(a.id);
+        const bi = fridayDishOrder.indexOf(b.id);
+        if (ai === -1 && bi === -1) return 0;
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      })
+    : filtered;
+
   const allSelected = filtered.length > 0 && filtered.every((d) => selectedIds.has(d.id));
   const someSelected = filtered.some((d) => selectedIds.has(d.id));
 
@@ -271,6 +301,18 @@ export default function AdminDishesPage() {
     } finally {
       setBulkUpdating(false);
     }
+  };
+
+  const moveFridayDish = (id: string, dir: 'up' | 'down') => {
+    setFridayDishOrder((prev) => {
+      const idx = prev.indexOf(id);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      if (dir === 'up' && idx > 0) [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      else if (dir === 'down' && idx < next.length - 1) [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      else return prev;
+      return next;
+    });
   };
 
   const handleExportMenu = async (locationId: string, deliveryTime: string, dishOrder: string[], rawDeliveryDate: string) => {
@@ -589,8 +631,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
             </button>
             <button
               onClick={() => {
-                const orderedIds = filtered.filter((d) => selectedIds.has(d.id)).map((d) => d.id);
-                setExportOrder(orderedIds);
+                const fromFriday = fridayDishOrder.filter((id) => selectedIds.has(id));
+                const fallback = filtered.filter((d) => selectedIds.has(d.id)).map((d) => d.id);
+                setExportOrder(fromFriday.length > 0 ? fromFriday : fallback);
                 setShowPDFModal(true);
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-spice-500 text-white hover:bg-spice-600 transition-all shadow-sm"
@@ -642,7 +685,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filtered.map((dish) => (
+                {sortedFiltered.map((dish) => (
                   <tr
                     key={dish.id}
                     className={`transition-colors ${
@@ -671,7 +714,14 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900 text-sm">{dish.name}</p>
+                      <p className="font-medium text-gray-900 text-sm">
+                        {menuTypeFilter === 'FRIDAY' && (
+                          <span className="inline-block text-[10px] font-bold text-spice-400 bg-spice-50 rounded px-1 mr-1.5">
+                            #{fridayDishOrder.indexOf(dish.id) + 1}
+                          </span>
+                        )}
+                        {dish.name}
+                      </p>
                       <p className="text-xs text-gray-500 line-clamp-1">{dish.description}</p>
                       <div className="flex gap-1 mt-1">
                         {dish.isVegetarian && (
@@ -704,6 +754,26 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
+                        {menuTypeFilter === 'FRIDAY' && (
+                          <>
+                            <button
+                              onClick={() => moveFridayDish(dish.id, 'up')}
+                              disabled={fridayDishOrder.indexOf(dish.id) === 0}
+                              className="p-2 rounded-lg text-gray-400 hover:text-spice-600 hover:bg-spice-50 transition-all disabled:opacity-25"
+                              title="Move up in menu order"
+                            >
+                              <ChevronUp size={15} />
+                            </button>
+                            <button
+                              onClick={() => moveFridayDish(dish.id, 'down')}
+                              disabled={fridayDishOrder.indexOf(dish.id) === fridayDishOrder.length - 1}
+                              className="p-2 rounded-lg text-gray-400 hover:text-spice-600 hover:bg-spice-50 transition-all disabled:opacity-25"
+                              title="Move down in menu order"
+                            >
+                              <ChevronDown size={15} />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => openEdit(dish)}
                           className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
@@ -984,39 +1054,10 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
                     </p>
                   )}
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Dish order <span className="normal-case font-normal text-gray-400">(drag to reorder)</span></p>
-                  <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
-                    {exportOrder.map((id, idx) => {
-                      const dish = dishes.find((d) => d.id === id);
-                      if (!dish) return null;
-                      return (
-                        <div key={id} className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-                          <span className="text-xs font-bold text-gray-300 w-4 text-center shrink-0">{idx + 1}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-gray-800 truncate">{dish.name}</p>
-                            <p className="text-[10px] text-gray-400">SEK {Number(dish.price)} &middot; {dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</p>
-                          </div>
-                          <div className="flex flex-col gap-0.5 shrink-0">
-                            <button
-                              disabled={idx === 0}
-                              onClick={() => setExportOrder((prev) => { const next = [...prev]; [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]; return next; })}
-                              className="p-0.5 rounded hover:bg-spice-100 text-gray-400 hover:text-spice-600 disabled:opacity-25 transition-colors"
-                            >
-                              <ChevronUp size={13} />
-                            </button>
-                            <button
-                              disabled={idx === exportOrder.length - 1}
-                              onClick={() => setExportOrder((prev) => { const next = [...prev]; [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]; return next; })}
-                              className="p-0.5 rounded hover:bg-spice-100 text-gray-400 hover:text-spice-600 disabled:opacity-25 transition-colors"
-                            >
-                              <ChevronDown size={13} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                <div className="flex items-center gap-2 bg-spice-50 rounded-xl p-3">
+                  <span className="text-xs text-spice-700">
+                    <strong>{exportOrder.length}</strong> dish{exportOrder.length !== 1 ? 'es' : ''} selected &middot; order set from the <strong>Friday</strong> tab ↑↓
+                  </span>
                 </div>
 
                 {/* Export button — slides in after time is chosen */}
