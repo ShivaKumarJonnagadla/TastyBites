@@ -320,24 +320,28 @@ export default function AdminDishesPage() {
 
     const dishCards = selectedDishes.map((dish) => `
       <div class="dish-card">
-        <div class="dish-img-wrap">
-          <img src="${imageCache[dish.id] || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" />
-          <div class="price-badge">SEK ${Number(dish.price)}</div>
-          <div class="${dish.isVegetarian ? 'veg-badge' : 'nonveg-badge'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</div>
+        <div class="dish-top">
+          <img class="dish-thumb" src="${imageCache[dish.id] || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" />
+          <div class="dish-info">
+            <h3 class="dish-name">${dish.name}</h3>
+            <p class="dish-desc">${dish.description}</p>
+            <p class="dish-meta">
+              <span class="dish-price">SEK ${Number(dish.price)}</span>
+              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
+              <span class="dish-spice">${spiceLabel(dish.spiceLevel)}</span>
+              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
+              <span class="${dish.isVegetarian ? 'dish-veg' : 'dish-nonveg'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</span>
+            </p>
+          </div>
         </div>
-        <div class="dish-body">
-          <h3 class="dish-name">${dish.name}</h3>
-          <p class="dish-desc">${dish.description}</p>
-          <span class="spice-tag">${spiceLabel(dish.spiceLevel)}</span>
-          <div class="ing-section">
-            <div class="ing-row">
-              <span class="ing-lang">🇬🇧 Ingredients</span>
-              <p class="ing-text">${dish.ingredients}</p>
-            </div>
-            <div class="ing-row">
-              <span class="ing-lang">🇸🇪 Ingredienser</span>
-              <p class="ing-text">${dish.ingredientsSv}</p>
-            </div>
+        <div class="ing-section">
+          <div class="ing-row">
+            <span class="ing-lang">🇬🇧 Ingredients</span>
+            <p class="ing-text">${dish.ingredients}</p>
+          </div>
+          <div class="ing-row">
+            <span class="ing-lang">🇸🇪 Ingredienser</span>
+            <p class="ing-text">${dish.ingredientsSv}</p>
           </div>
         </div>
       </div>
@@ -351,32 +355,33 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .header-left{display:flex;align-items:center;gap:14px;}
 .logo-wrap{background:rgba(255,255,255,0.92);border-radius:10px;padding:5px 10px;display:inline-flex;align-items:center;justify-content:center;}
 .logo-img{height:48px;width:auto;object-fit:contain;}
-.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;}
-.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;margin-bottom:7px;}
+.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;}
 .header-right{text-align:right;flex-shrink:0;}
-.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:1px;}
-.week-num{font-size:40px;font-weight:700;line-height:1;}
-.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:2px;}
+.week-num{font-size:32px;font-weight:700;line-height:1.1;margin-bottom:3px;}
+.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;}
 /* INFO STRIP */
 .info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F2D4DE;padding:8px 36px;display:flex;align-items:center;gap:28px;font-size:11.5px;color:#7A6055;}
 .info-strip b{color:#C2185B;}
 .info-sep{color:#F2D4DE;font-size:16px;}
 /* DISHES */
 .dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 36px;}
-.dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);}
-.dish-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#f5edf0;}
-.dish-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.price-badge{position:absolute;bottom:10px;right:10px;background:#C2185B;color:#fff;font-size:14px;font-weight:700;padding:4px 13px;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,.25);}
-.veg-badge,.nonveg-badge{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:999px;}
-.veg-badge{background:rgba(255,255,255,.9);color:#166534;border:1px solid #BBF7D0;}
-.nonveg-badge{background:rgba(255,255,255,.9);color:#991B1B;border:1px solid #FECACA;}
-.dish-body{padding:11px 14px 14px;}
-.dish-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:3px;line-height:1.25;}
-.dish-desc{font-size:11px;color:#7A6055;line-height:1.5;margin-bottom:8px;}
-.spice-tag{display:inline-block;font-size:10px;background:#FFF3F7;border:1px solid #F9C6D8;color:#880E4F;padding:2px 8px;border-radius:4px;font-weight:600;margin-bottom:9px;}
+.dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);padding:14px;}
+.dish-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
+.dish-thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid #F2E4E8;}
+.dish-info{flex:1;min-width:0;}
+.dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;margin-bottom:3px;}
+.dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:5px;}
+.dish-meta{font-size:10px;color:#555;}
+.dish-price{font-size:12px;font-weight:800;color:#C2185B;}
+.dish-dot{color:#ccc;}
+.dish-spice{font-size:10px;color:#7A4F00;}
+.dish-veg{font-size:10px;font-weight:700;color:#166534;}
+.dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
-.ing-lang{display:block;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
-.ing-text{font-size:10.5px;color:#444;line-height:1.55;}
+.ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
+.ing-text{font-size:10px;color:#444;line-height:1.55;}
 /* FOOTER */
 .footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
 .footer-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:#FFF3F7;}
@@ -384,7 +389,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .footer-col{padding:14px 18px;}
 .footer-col-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C2185B;margin-bottom:8px;}
 .footer-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
-.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;line-height:16px;text-align:center;display:inline-block;flex-shrink:0;}
 .footer-step p{font-size:10.5px;color:#555;line-height:1.5;}
 .footer-step p b{color:#1a1a1a;}
 .footer-contact-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
