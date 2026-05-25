@@ -54,16 +54,20 @@ export default function Footer() {
             </a>
             <div className="flex gap-3 mt-4">
               <a
-                href="#"
+                href="https://www.instagram.com/tastybites.almhult/"
                 className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-spice-500 transition-colors"
                 aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Instagram size={18} />
               </a>
               <a
-                href="#"
+                href="https://www.facebook.com/groups/1415819538679299/user/61578286531006/"
                 className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-spice-500 transition-colors"
                 aria-label="Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <Facebook size={18} />
               </a>
