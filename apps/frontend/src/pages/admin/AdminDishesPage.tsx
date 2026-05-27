@@ -432,7 +432,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-
 .footer-col{padding:14px 18px;}
 .footer-col-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C2185B;margin-bottom:8px;}
 .footer-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
-.step-num{background:#C2185B;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;line-height:16px;text-align:center;display:inline-block;flex-shrink:0;}
+.step-num{color:#C2185B;font-size:11px;font-weight:800;min-width:14px;display:inline-block;flex-shrink:0;}
 .footer-step p{font-size:10.5px;color:#555;line-height:1.5;}
 .footer-step p b{color:#1a1a1a;}
 .footer-contact-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
