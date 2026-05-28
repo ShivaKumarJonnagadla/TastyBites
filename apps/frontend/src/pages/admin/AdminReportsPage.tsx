@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { TrendingUp, ShoppingBag, CheckCircle, Clock, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, ShoppingBag, CheckCircle, Clock, ChevronDown, CheckSquare, Square, XCircle } from 'lucide-react';
 import { orderApi } from '../../lib/api';
+import toast from 'react-hot-toast';
 
 type Period = 'thisWeek' | 'lastWeek' | 'thisMonth' | 'lastMonth' | 'allTime';
 
@@ -77,10 +78,13 @@ export default function AdminReportsPage() {
   const [period, setPeriod] = useState<Period>('thisWeek');
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
+      setSelectedIds(new Set());
       try {
         const { startDate, endDate } = getDateRange(period);
         const params: Record<string, string | number> = { limit: 500, archived: 'all' };
@@ -99,8 +103,42 @@ export default function AdminReportsPage() {
 
   const totalRevenue = orders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
   const completedOrders = orders.filter((o) => o.status === 'COMPLETED').length;
-  const pendingOrders = orders.filter((o) => o.status === 'PENDING').length;
+  const pendingOrders = orders.filter((o) => o.status === 'PENDING');
+  const pendingCount = pendingOrders.length;
   const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
+
+  const allPendingSelected = pendingCount > 0 && pendingOrders.every((o) => selectedIds.has(o.id));
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllPending = () => {
+    if (allPendingSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pendingOrders.map((o) => o.id)));
+    }
+  };
+
+  const handleMarkCompleted = async () => {
+    if (selectedIds.size === 0) return;
+    setMarking(true);
+    try {
+      await Promise.all([...selectedIds].map((id) => orderApi.updateStatus(id, 'COMPLETED')));
+      toast.success(`${selectedIds.size} order${selectedIds.size !== 1 ? 's' : ''} marked as completed`);
+      setOrders((prev) => prev.map((o) => selectedIds.has(o.id) ? { ...o, status: 'COMPLETED' } : o));
+      setSelectedIds(new Set());
+    } catch {
+      toast.error('Failed to update some orders');
+    } finally {
+      setMarking(false);
+    }
+  };
 
   const statCards = [
     { label: 'Total Orders', value: String(orders.length), icon: ShoppingBag, color: 'text-blue-600 bg-blue-50' },
@@ -154,13 +192,57 @@ export default function AdminReportsPage() {
         ))}
       </div>
 
-      {/* Pending badge */}
-      {!loading && pendingOrders > 0 && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
-          <Clock size={15} className="text-yellow-600 shrink-0" />
-          <span><strong>{pendingOrders}</strong> pending order{pendingOrders !== 1 ? 's' : ''} in this period still awaiting action.</span>
+      {/* Pending badge with quick select */}
+      {!loading && pendingCount > 0 && (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Clock size={15} className="text-yellow-600 shrink-0" />
+            <span><strong>{pendingCount}</strong> pending order{pendingCount !== 1 ? 's' : ''} in this period still awaiting action.</span>
+          </div>
+          <button
+            onClick={selectAllPending}
+            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-yellow-100 hover:bg-yellow-200 text-yellow-800 transition-colors"
+          >
+            {allPendingSelected
+              ? <><XCircle size={13} /> Deselect all</>
+              : <><CheckSquare size={13} /> Select all pending</>}
+          </button>
         </div>
       )}
+
+      {/* Bulk action toolbar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="flex items-center gap-3 flex-wrap px-4 py-3 bg-green-50 border border-green-200 rounded-xl"
+          >
+            <span className="text-sm font-semibold text-green-800">
+              {selectedIds.size} order{selectedIds.size !== 1 ? 's' : ''} selected
+            </span>
+            <button
+              onClick={handleMarkCompleted}
+              disabled={marking}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-green-600 hover:bg-green-700 text-white transition-all disabled:opacity-60 shadow-sm"
+            >
+              {marking ? (
+                <motion.div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full" animate={{ rotate: 360 }} transition={{ duration: 0.7, repeat: Infinity, ease: 'linear' }} />
+              ) : (
+                <CheckCircle size={15} />
+              )}
+              Mark as Completed
+            </button>
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="ml-auto flex items-center gap-1 text-xs text-green-700 hover:text-green-900 transition-colors"
+            >
+              <XCircle size={14} /> Clear
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Orders Table */}
       <div className="card overflow-hidden">
@@ -191,14 +273,50 @@ export default function AdminReportsPage() {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="pl-4 pr-2 py-3">
+                    <button
+                      onClick={selectAllPending}
+                      className="text-gray-400 hover:text-green-600 transition-colors"
+                      title={allPendingSelected ? 'Deselect all pending' : 'Select all pending'}
+                    >
+                      {allPendingSelected
+                        ? <CheckSquare size={17} className="text-green-600" />
+                        : selectedIds.size > 0
+                          ? <CheckSquare size={17} className="text-green-300" />
+                          : <Square size={17} />}
+                    </button>
+                  </th>
                   {['Date', 'Customer', 'Items', 'Amount', 'Payment', 'Status'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
+                {orders.map((order) => {
+                  const isPending = order.status === 'PENDING';
+                  const isSelected = selectedIds.has(order.id);
+                  return (
+                    <tr
+                      key={order.id}
+                      className={`transition-colors ${
+                        isSelected ? 'bg-green-50/60 hover:bg-green-50' : 'hover:bg-gray-50/50'
+                      }`}
+                    >
+                      <td className="pl-4 pr-2 py-3">
+                        <button
+                          onClick={() => isPending && toggleSelect(order.id)}
+                          className={`transition-colors ${
+                            isPending
+                              ? 'text-gray-300 hover:text-green-600 cursor-pointer'
+                              : 'text-gray-100 cursor-default'
+                          }`}
+                          disabled={!isPending}
+                        >
+                          {isSelected
+                            ? <CheckSquare size={17} className="text-green-600" />
+                            : <Square size={17} />}
+                        </button>
+                      </td>
                     <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
                       {new Date(order.orderDate).toLocaleDateString('en-SE', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
@@ -219,7 +337,8 @@ export default function AdminReportsPage() {
                       </span>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
