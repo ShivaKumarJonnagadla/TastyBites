@@ -171,9 +171,11 @@ export async function getOrders(req: Request, res: Response, next: NextFunction)
 
     const where: Record<string, unknown> = {};
 
-    // archived=true → show only archived; default → show only non-archived
+    // archived=true → show only archived; archived=all → show everything; default → non-archived only
     if (archived === 'true') {
       where.archivedAt = { not: null };
+    } else if (archived === 'all') {
+      // no archivedAt filter — include both active and archived orders
     } else {
       where.archivedAt = null;
     }

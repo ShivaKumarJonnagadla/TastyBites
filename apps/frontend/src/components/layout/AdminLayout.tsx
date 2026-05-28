@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, UtensilsCrossed, ShoppingBag,
-  Settings, Megaphone, LogOut, Menu, ChevronRight
+  Settings, Megaphone, LogOut, Menu, ChevronRight, BarChart2
 } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { to: '/admin/dishes', label: 'Dishes', icon: UtensilsCrossed },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+  { to: '/admin/reports', label: 'Reports', icon: BarChart2 },
   { to: '/admin/promotions', label: 'Promotions', icon: Megaphone },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];

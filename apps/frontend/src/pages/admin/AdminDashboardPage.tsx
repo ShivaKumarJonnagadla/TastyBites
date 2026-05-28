@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, TrendingUp, Clock, CheckCircle, ArrowRight, UtensilsCrossed } from 'lucide-react';
+import { ShoppingBag, TrendingUp, Clock, CheckCircle, ArrowRight, UtensilsCrossed, BarChart2 } from 'lucide-react';
 import { orderApi, dishApi } from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
 
@@ -12,6 +12,15 @@ interface Stats {
   completedOrders: number;
   todayRevenue: number;
   weekRevenue: number;
+}
+
+function getThisWeekStart(): string {
+  const now = new Date();
+  const diff = (now.getDay() + 6) % 7; // days since Monday
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString();
 }
 
 interface Order {
@@ -25,12 +34,15 @@ interface Order {
   orderItems: { dish: { name: string }; quantity: number }[];
 }
 
-const statCards = (stats: Stats) => [
-  { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-blue-600 bg-blue-50', change: '' },
-  { label: "Today's Revenue", value: `SEK ${stats.todayRevenue.toFixed(0)}`, icon: TrendingUp, color: 'text-green-600 bg-green-50', change: '' },
-  { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-orange-600 bg-orange-50', change: '' },
-  { label: 'This Week', value: `SEK ${stats.weekRevenue.toFixed(0)}`, icon: CheckCircle, color: 'text-spice-600 bg-spice-50', change: '' },
-];
+const statCards = (stats: Stats, weekOrders: { totalAmount: number }[]) => {
+  const weekRevenue = weekOrders.reduce((sum, o) => sum + Number(o.totalAmount), 0);
+  return [
+    { label: 'This Week Orders', value: weekOrders.length, icon: ShoppingBag, color: 'text-blue-600 bg-blue-50' },
+    { label: "Today's Revenue", value: `SEK ${stats.todayRevenue.toFixed(0)}`, icon: TrendingUp, color: 'text-green-600 bg-green-50' },
+    { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-orange-600 bg-orange-50' },
+    { label: 'This Week Revenue', value: `SEK ${weekRevenue.toFixed(0)}`, icon: CheckCircle, color: 'text-spice-600 bg-spice-50' },
+  ];
+};
 
 const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
@@ -43,6 +55,7 @@ const statusColors: Record<string, string> = {
 export default function AdminDashboardPage() {
   const { admin } = useAuthStore();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [weekOrders, setWeekOrders] = useState<{ totalAmount: number }[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [dishCount, setDishCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -50,13 +63,15 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, ordersRes, dishesRes] = await Promise.all([
+        const [statsRes, ordersRes, weekOrdersRes, dishesRes] = await Promise.all([
           orderApi.getStats(),
           orderApi.getAll({ limit: 5 }),
+          orderApi.getAll({ startDate: getThisWeekStart(), limit: 500, archived: 'all' }),
           dishApi.getAll({ limit: 1 }),
         ]);
         setStats(statsRes.data.data);
         setRecentOrders(ordersRes.data.data || []);
+        setWeekOrders(weekOrdersRes.data.data || []);
         setDishCount(dishesRes.data.total || 0);
       } catch {
         // handle error
@@ -86,7 +101,7 @@ export default function AdminDashboardPage() {
         </div>
       ) : stats ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {statCards(stats).map((card, i) => (
+          {statCards(stats, weekOrders).map((card, i) => (
             <motion.div
               key={card.label}
               initial={{ opacity: 0, y: 20 }}
@@ -109,6 +124,7 @@ export default function AdminDashboardPage() {
         {[
           { to: '/admin/dishes', label: 'Add Dish', emoji: '➕', color: 'bg-spice-50 text-spice-700 border-spice-100' },
           { to: '/admin/orders', label: 'View Orders', emoji: '📋', color: 'bg-blue-50 text-blue-700 border-blue-100' },
+          { to: '/admin/reports', label: 'Reports', emoji: '📊', color: 'bg-purple-50 text-purple-700 border-purple-100' },
           { to: '/admin/promotions', label: 'WhatsApp Promo', emoji: '📱', color: 'bg-green-50 text-green-700 border-green-100' },
           { to: '/admin/settings', label: 'Settings', emoji: '⚙️', color: 'bg-gray-50 text-gray-700 border-gray-200' },
         ].map((action) => (

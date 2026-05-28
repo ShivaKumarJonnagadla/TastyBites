@@ -19,6 +19,7 @@ const AdminDishesPage = lazy(() => import('./pages/admin/AdminDishesPage'));
 const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
 const AdminPromotionsPage = lazy(() => import('./pages/admin/AdminPromotionsPage'));
+const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
             <Route path="orders" element={<AdminOrdersPage />} />
             <Route path="settings" element={<AdminSettingsPage />} />
             <Route path="promotions" element={<AdminPromotionsPage />} />
+            <Route path="reports" element={<AdminReportsPage />} />
           </Route>
         </Routes>
       </Suspense>
