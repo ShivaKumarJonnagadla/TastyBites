@@ -17,7 +17,7 @@
       "title": "🙏 Hemmets smak med traditionens touch",
       "body": "Upplev smaken av Indien här i Älmhult! På Tasty Bites serverar vi hemlagad, smakfull och äkta indisk mat gjord med kärlek och traditionella recept. Från aromatisk Chicken Biryani och sydindisk frukost som Idly, Pongal & Vada, till rejäla sydindiska måltider och läcker Chettinadu-fiskgryta — varje rätt är ett firande av indisk matkultur.",
       "tagline": "✨ En tugga och du känner dig som i Indien!",
-      "location": "Hjortvägen, Älmhult, Sverige",
+      "location": "Älmhult, Sverige",
       "features": {
         "homecooked": "Hemlagad",
         "spices": "Äkta Kryddor",
@@ -63,7 +63,7 @@
       },
       "location": {
         "title": "Vår Plats",
-        "address": "Hjortvägen, Älmhult, Sverige",
+        "address": "Älmhult, Sverige",
         "description": "Vi är ett hemkök — upphämtningsdetaljer delas i din orderbekräftelse."
       },
       "whatsapp": "WhatsApp",
@@ -162,7 +162,7 @@
     "q2": "Hur betalar jag?",
     "a2": "Vi accepterar Swish (skanna QR-koden) och kontanter. Betala när du hämtar din mat.",
     "q3": "Var hämtar jag min beställning?",
-    "a3": "Vi är ett cloud kitchen i Hjortvägen, Älmhult. Upphämtningsdetaljer delas i din orderbekräftelse.",
+    "a3": "Vi är ett cloud kitchen i Älmhult. Upphämtningsdetaljer delas i din orderbekräftelse.",
     "q4": "Tar ni partybeställningar eller kontorsbeställningar?",
     "a4": "Ja! Vi tar emot party-, kontorslunch- och middagsbeställningar. WhatsApp oss på +46 769677497 för att diskutera.",
     "q5": "Är maten halal?",

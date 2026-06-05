@@ -117,7 +117,7 @@ function buildOrderHtml(order: Order, forCustomer = false, dishSummary?: DishSum
       ${adminLink}
     </div>
     <div style="background:#f9fafb;padding:16px;text-align:center;border-top:1px solid #f0f0f0;">
-      <p style="margin:0;font-size:12px;color:#9ca3af;">Tasty Bites · Authentic Indian Food · Hjortvägen, Älmhult, Sweden</p>
+      <p style="margin:0;font-size:12px;color:#9ca3af;">Tasty Bites · Authentic Indian Food · Älmhult, Sweden</p>
       <p style="margin:4px 0 0;font-size:12px;color:#9ca3af;">📞 +46 769677497</p>
     </div>
   </div>

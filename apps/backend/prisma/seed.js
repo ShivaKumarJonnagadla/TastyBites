@@ -24,13 +24,13 @@ async function main() {
     await prisma.pickupMessage.upsert({
         where: { id: 'default-pickup' },
         update: {
-            message: 'Thank you for your order! 🙏 Please pick up your food at Hjortvägen, Älmhult. We will contact you when your order is ready. Payment via Swish to: +46 769677497',
-            messageSv: 'Tack för din beställning! 🙏 Hämta din mat på Hjortvägen, Älmhult. Vi kontaktar dig när din beställning är klar. Betalning via Swish till: +46 769677497',
+            message: 'Thank you for your order! 🙏 Please pick up your food at Älmhult. We will contact you when your order is ready. Payment via Swish to: +46 769677497',
+            messageSv: 'Tack för din beställning! 🙏 Hämta din mat i Älmhult. Vi kontaktar dig när din beställning är klar. Betalning via Swish till: +46 769677497',
         },
         create: {
             id: 'default-pickup',
-            message: 'Thank you for your order! 🙏 Please pick up your food at Hjortvägen, Älmhult. We will contact you when your order is ready. Payment via Swish to: +46 769677497',
-            messageSv: 'Tack för din beställning! 🙏 Hämta din mat på Hjortvägen, Älmhult. Vi kontaktar dig när din beställning är klar. Betalning via Swish till: +46 769677497',
+            message: 'Thank you for your order! 🙏 Please pick up your food at Älmhult. We will contact you when your order is ready. Payment via Swish to: +46 769677497',
+            messageSv: 'Tack för din beställning! 🙏 Hämta din mat i Älmhult. Vi kontaktar dig när din beställning är klar. Betalning via Swish till: +46 769677497',
             isActive: true,
         },
     });
@@ -38,7 +38,7 @@ async function main() {
     // Default settings
     const defaultSettings = [
         { key: 'SWISH_NUMBER', value: '+46769677497' },
-        { key: 'PICKUP_LOCATION', value: 'Hjortvägen, Älmhult, Sweden' },
+        { key: 'PICKUP_LOCATION', value: 'Älmhult, Sweden' },
         { key: 'PICKUP_TIME', value: 'Mon–Sun 09:00–17:00' },
         { key: 'CONTACT_EMAIL', value: 'prabu.pd@gmail.com' },
         { key: 'CONTACT_PHONE', value: '+46769677497' },
