@@ -9,7 +9,7 @@ const SETTING_GROUPS = [
     title: 'Business Info',
     emoji: '🏪',
     keys: [
-      { key: 'PICKUP_LOCATION', label: 'Pickup Location', placeholder: 'Hjortvägen, Älmhult, Sweden' },
+      { key: 'PICKUP_LOCATION', label: 'Pickup Location', placeholder: 'Älmhult, Sweden' },
       { key: 'PICKUP_TIME', label: 'Pickup Time', placeholder: 'Friday 17:00 - 20:00' },
       { key: 'CONTACT_EMAIL', label: 'Contact Email', placeholder: 'info@tastybites.se' },
       { key: 'CONTACT_PHONE', label: 'Contact Phone', placeholder: '+46 70 123 4567' },

@@ -48,7 +48,7 @@ export default function Footer() {
           {/* Contact & Social */}
           <div>
             <h3 className="font-semibold text-white mb-4">Find Us</h3>
-            <p className="text-sm text-gray-400 mb-1">📍 Hjortvägen, Älmhult, Sweden</p>
+            <p className="text-sm text-gray-400 mb-1">📍 Älmhult, Sweden</p>
             <a href="tel:+46769677497" className="text-sm text-gray-400 hover:text-spice-400 transition-colors">
               📞 +46 769677497
             </a>
