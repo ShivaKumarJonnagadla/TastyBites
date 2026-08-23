@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ShoppingCart, Globe, Play } from 'lucide-react';
+import { Menu, X, ShoppingCart, Globe, Play, Star } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../../store/cartStore';
+import { settingsApi } from '../../lib/api';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showStory, setShowStory] = useState(false);
+  const [showKalaset, setShowKalaset] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -20,6 +22,15 @@ export default function Navbar() {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    settingsApi.getAll()
+      .then((res) => {
+        const s = res.data.data || {};
+        setShowKalaset(s.SHOW_ALMHULTSKALASET === 'true');
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -64,13 +75,14 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { to: '/', label: t('nav.home'), hash: null, action: null },
-    { to: '/menu', label: t('nav.menu'), hash: null, action: null },
-    { to: '/#friday-menu', label: t('nav.fridayMenu'), hash: 'friday-menu', action: null },
-    { to: '/#reviews', label: t('nav.reviews'), hash: 'reviews', action: null },
-    { to: '/#faq', label: t('nav.faq'), hash: 'faq', action: null },
-    { to: '/#contact', label: t('nav.contact'), hash: 'contact', action: null },
-    { to: '#our-story', label: t('nav.ourStory'), hash: null, action: openStory },
+    { to: '/', label: t('nav.home'), hash: null, action: null, special: false },
+    { to: '/menu', label: t('nav.menu'), hash: null, action: null, special: false },
+    ...(showKalaset ? [{ to: '/almhultskalaset', label: 'Älmhultskalaset', hash: null, action: null, special: true }] : []),
+    { to: '/#friday-menu', label: t('nav.fridayMenu'), hash: 'friday-menu', action: null, special: false },
+    { to: '/#reviews', label: t('nav.reviews'), hash: 'reviews', action: null, special: false },
+    { to: '/#faq', label: t('nav.faq'), hash: 'faq', action: null, special: false },
+    { to: '/#contact', label: t('nav.contact'), hash: 'contact', action: null, special: false },
+    { to: '#our-story', label: t('nav.ourStory'), hash: null, action: openStory, special: false },
   ];
 
   return (
@@ -130,6 +142,18 @@ export default function Navbar() {
                   >
                     {link.label}
                   </button>
+                );
+              }
+              if (link.special) {
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="flex items-center gap-1.5 text-sm font-bold px-3 py-1 rounded-full bg-amber-400 text-[#5c1a3a] hover:bg-amber-300 transition-all animate-pulse"
+                  >
+                    <Star size={11} className="fill-current" />
+                    {link.label}
+                  </Link>
                 );
               }
               return (
@@ -229,6 +253,18 @@ export default function Navbar() {
                     >
                       {link.label}
                     </button>
+                  );
+                }
+                if (link.special) {
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-amber-400 text-[#5c1a3a] hover:bg-amber-300 transition-colors"
+                    >
+                      <Star size={13} className="fill-current" />
+                      {link.label}
+                    </Link>
                   );
                 }
                 return (

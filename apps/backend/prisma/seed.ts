@@ -48,6 +48,7 @@ async function main() {
     { key: 'SHOW_FRIDAY_MENU', value: 'true' },
     { key: 'SHOW_DAILY_MENU', value: 'true' },
     { key: 'ORDERS_ENABLED', value: 'true' },
+    { key: 'SHOW_ALMHULTSKALASET', value: 'false' },
     { key: 'APP_URL', value: 'https://tastybites.vercel.app' },
   ];
 

@@ -20,6 +20,7 @@ const AdminOrdersPage = lazy(() => import('./pages/admin/AdminOrdersPage'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'));
 const AdminPromotionsPage = lazy(() => import('./pages/admin/AdminPromotionsPage'));
 const AdminReportsPage = lazy(() => import('./pages/admin/AdminReportsPage'));
+const AlmhultskalasetPage = lazy(() => import('./pages/AlmhultskalasetPage'));
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/confirmation/:orderId" element={<ConfirmationPage />} />
+            <Route path="/almhultskalaset" element={<AlmhultskalasetPage />} />
           </Route>
 
           {/* Admin routes */}

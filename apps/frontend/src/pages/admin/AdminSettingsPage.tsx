@@ -39,6 +39,7 @@ const SETTING_GROUPS = [
       { key: 'SHOW_DAILY_MENU', label: 'Show Daily Menu', placeholder: 'true / false', isBoolean: true },
       { key: 'SHOW_FRIDAY_MENU', label: 'Show Friday Menu', placeholder: 'true / false', isBoolean: true },
       { key: 'ORDERS_ENABLED', label: 'Orders Enabled', placeholder: 'true / false', isBoolean: true },
+      { key: 'SHOW_ALMHULTSKALASET', label: 'Show Älmhultskalaset 2026 Page', placeholder: 'true / false', isBoolean: true },
     ],
   },
 ];
