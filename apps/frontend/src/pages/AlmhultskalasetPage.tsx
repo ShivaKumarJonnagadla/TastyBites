@@ -23,7 +23,7 @@ interface Dish {
   category: string;
 }
 
-// Dish name keywords → which slot they belong to
+// Exact dish names per slot (case-insensitive)
 const SLOT_CONFIG = [
   {
     id: 'morning',
@@ -35,7 +35,7 @@ const SLOT_CONFIG = [
     headerBg: 'bg-amber-100',
     headerText: 'text-amber-800',
     timeBg: 'bg-amber-500',
-    keywords: ['puff', 'rasmalai', 'egg puff', 'vegetable puff', 'chicken puff'],
+    names: ['vegetable puffs', 'egg puffs', 'chicken puffs', 'rasmalai'],
   },
   {
     id: 'lunch',
@@ -47,7 +47,13 @@ const SLOT_CONFIG = [
     headerBg: 'bg-rose-100',
     headerText: 'text-rose-800',
     timeBg: 'bg-rose-500',
-    keywords: ['biriyani', 'butter chicken', 'paneer butter', 'fried rice', 'ghee rice', 'manchurian'],
+    names: [
+      'dindigul chicken biriyani',
+      'rice with creamy butter chicken',
+      'rice with creamy paneer butter masala',
+      'veg fried rice with gobi manchurian',
+      'ghee rice with pepper chicken',
+    ],
   },
   {
     id: 'evening',
@@ -59,14 +65,14 @@ const SLOT_CONFIG = [
     headerBg: 'bg-indigo-100',
     headerText: 'text-indigo-800',
     timeBg: 'bg-indigo-500',
-    keywords: ['bajji', 'pani puri', 'dahi puri', 'gobi 65', 'mango lassi', 'paneer frankie', 'lassi', 'frankie'],
+    names: ['bajjis', 'pani puri', 'dahi puri', 'gobi 65', 'mango lassi', 'paneer frankie'],
   },
 ];
 
 function matchSlot(dishName: string): string | null {
-  const lower = dishName.toLowerCase();
+  const lower = dishName.toLowerCase().trim();
   for (const slot of SLOT_CONFIG) {
-    if (slot.keywords.some((kw) => lower.includes(kw))) return slot.id;
+    if (slot.names.some((n) => lower === n || lower.includes(n) || n.includes(lower))) return slot.id;
   }
   return null;
 }
