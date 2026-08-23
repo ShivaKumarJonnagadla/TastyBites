@@ -72,7 +72,7 @@ const SLOT_CONFIG = [
 function matchSlot(dishName: string): string | null {
   const lower = dishName.toLowerCase().trim();
   for (const slot of SLOT_CONFIG) {
-    if (slot.names.some((n) => lower === n || lower.includes(n) || n.includes(lower))) return slot.id;
+    if (slot.names.includes(lower)) return slot.id;
   }
   return null;
 }
