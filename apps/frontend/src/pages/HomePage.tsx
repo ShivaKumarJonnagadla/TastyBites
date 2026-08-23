@@ -25,6 +25,8 @@ interface Dish {
   category: string;
 }
 
+const showKalaset = () => localStorage.getItem('show_kalaset') === 'true';
+
 const testimonials = [
   {
     name: 'Aaliya Badar Ahamed',
@@ -251,6 +253,21 @@ export default function HomePage() {
               <Phone size={18} /> {t('home.whatsapp')}
             </a>
           </motion.div>
+          {showKalaset() && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="mt-4 flex justify-center"
+            >
+              <Link
+                to="/almhultskalaset"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm bg-amber-400 text-[#5c1a3a] hover:bg-amber-300 transition-all animate-pulse shadow-lg"
+              >
+                <Star size={14} className="fill-current" /> ÄLMHULTSKALASET 2026 — Pre-order now!
+              </Link>
+            </motion.div>
+          )}
         </div>
 
         {/* Scroll indicator */}

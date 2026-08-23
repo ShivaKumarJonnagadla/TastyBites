@@ -10,7 +10,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showStory, setShowStory] = useState(false);
-  const [showKalaset, setShowKalaset] = useState(false);
+  const [showKalaset, setShowKalaset] = useState(() => localStorage.getItem('show_kalaset') === 'true');
   const videoRef = useRef<HTMLVideoElement>(null);
   const { t, i18n } = useTranslation();
   const location = useLocation();
@@ -28,7 +28,9 @@ export default function Navbar() {
     settingsApi.getAll()
       .then((res) => {
         const s = res.data.data || {};
-        setShowKalaset(s.SHOW_ALMHULTSKALASET === 'true');
+        const val = s.SHOW_ALMHULTSKALASET === 'true';
+        setShowKalaset(val);
+        localStorage.setItem('show_kalaset', String(val));
       })
       .catch(() => {});
   }, []);
