@@ -53,6 +53,7 @@ const SLOT_CONFIG = [
       'rice with creamy paneer butter masala',
       'veg fried rice with gobi manchurian',
       'ghee rice with pepper chicken',
+      'veg fried rice with chilli paneer',
     ],
   },
   {
