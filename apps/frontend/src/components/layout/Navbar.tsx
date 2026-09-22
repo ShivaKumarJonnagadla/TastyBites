@@ -51,7 +51,6 @@ export default function Navbar() {
       if (!el) return;
       const navbarHeight = 68;
       const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-      // Use scrollTo with fallback for iOS Safari
       try {
         window.scrollTo({ top, behavior: 'smooth' });
       } catch {
@@ -60,15 +59,40 @@ export default function Navbar() {
     };
 
     if (location.pathname !== '/') {
-      navigate('/');
-      setTimeout(doScroll, 600);
+      // Pass the scroll target via router state so we scroll after home page mounts
+      navigate('/', { state: { scrollTo: id } });
     } else if (wasOpen) {
-      // Wait longer for iOS menu close animation
       setTimeout(doScroll, 500);
     } else {
       doScroll();
     }
   };
+
+  // When navigated to '/' with a scrollTo state, scroll once the DOM is ready
+  useEffect(() => {
+    const target = (location.state as { scrollTo?: string })?.scrollTo;
+    if (!target || location.pathname !== '/') return;
+
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(target);
+      if (el) {
+        const navbarHeight = 68;
+        const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
+        try {
+          window.scrollTo({ top, behavior: 'smooth' });
+        } catch {
+          window.scrollTo(0, top);
+        }
+        // Clear state so it doesn't re-scroll on re-renders
+        navigate('/', { replace: true, state: {} });
+      } else if (attempts < 10) {
+        attempts++;
+        setTimeout(tryScroll, 150);
+      }
+    };
+    setTimeout(tryScroll, 200);
+  }, [location.pathname, location.state]);
 
   const openStory = () => {
     setIsOpen(false);
