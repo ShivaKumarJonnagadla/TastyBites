@@ -1,6 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/layout/AdminLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -8,6 +8,32 @@ import LoadingSpinner from './components/ui/LoadingSpinner';
 import CartDrawer from './components/cart/CartDrawer';
 import CookieBanner from './components/ui/CookieBanner';
 import PWAInstallBanner from './components/PWAInstallBanner';
+
+function HashScrollHandler() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!location.hash || location.pathname !== '/') return;
+    const id = location.hash.slice(1);
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        const top = el.getBoundingClientRect().top + window.scrollY - 68;
+        try { window.scrollTo({ top, behavior: 'smooth' }); }
+        catch { window.scrollTo(0, top); }
+        // Clear hash from URL without re-triggering scroll
+        navigate('/', { replace: true });
+      } else if (++attempts < 20) {
+        setTimeout(tryScroll, 100);
+      }
+    };
+    setTimeout(tryScroll, 50);
+  }, [location.hash, location.pathname]);
+
+  return null;
+}
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const MenuPage = lazy(() => import('./pages/MenuPage'));
@@ -36,6 +62,7 @@ function App() {
       <CartDrawer />
       <CookieBanner />
       <PWAInstallBanner />
+      <HashScrollHandler />
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
           {/* Public routes */}
