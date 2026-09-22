@@ -51,16 +51,20 @@ export default function Navbar() {
       if (!el) return;
       const navbarHeight = 68;
       const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-      window.scrollTo({ top, behavior: 'smooth' });
+      // Use scrollTo with fallback for iOS Safari
+      try {
+        window.scrollTo({ top, behavior: 'smooth' });
+      } catch {
+        window.scrollTo(0, top);
+      }
     };
 
     if (location.pathname !== '/') {
-      // Navigate to home first, then scroll after page loads
       navigate('/');
-      setTimeout(doScroll, 500);
+      setTimeout(doScroll, 600);
     } else if (wasOpen) {
-      // Wait for mobile menu close animation to finish before scrolling
-      setTimeout(doScroll, 350);
+      // Wait longer for iOS menu close animation
+      setTimeout(doScroll, 500);
     } else {
       doScroll();
     }
@@ -96,7 +100,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img
               src="/logo.png"
               alt="Tasty Bites"

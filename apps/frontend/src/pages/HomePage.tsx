@@ -239,7 +239,7 @@ export default function HomePage() {
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
             <Link
-              to="/menu"
+              to="/menu?tab=friday"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base bg-spice-500 text-white hover:bg-spice-600 transition-all shadow-warm-lg"
             >
               {t('hero.cta')} <ArrowRight size={20} />

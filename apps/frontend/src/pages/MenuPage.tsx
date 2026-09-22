@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { dishApi } from '../lib/api';
 import MenuSection from '../components/menu/MenuSection';
 
@@ -26,9 +27,12 @@ type Tab = 'all' | 'friday';
 
 export default function MenuPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('all');
+  const [activeTab, setActiveTab] = useState<Tab>(
+    searchParams.get('tab') === 'friday' ? 'friday' : 'all'
+  );
 
   useEffect(() => {
     const fetchDishes = async () => {
