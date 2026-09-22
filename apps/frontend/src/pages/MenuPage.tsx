@@ -28,7 +28,8 @@ type Tab = 'all' | 'friday';
 export default function MenuPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
-  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [allDishes, setAllDishes] = useState<Dish[]>([]);
+  const [fridayDishes, setFridayDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>(
     searchParams.get('tab') === 'friday' ? 'friday' : 'all'
@@ -37,10 +38,19 @@ export default function MenuPage() {
   useEffect(() => {
     const fetchDishes = async () => {
       try {
-        const res = await dishApi.getAll({ isAvailable: 'true' });
-        setDishes(res.data.data || []);
+        const [allRes, fridayRes] = await Promise.all([
+          dishApi.getAll({ isAvailable: 'true', limit: '200' }),
+          dishApi.getAll({ menuType: 'FRIDAY', isAvailable: 'true', limit: '200' }),
+        ]);
+        setAllDishes((allRes.data.data || []).sort((a: Dish, b: Dish) => {
+          const aSpec = a.category === 'Specialities' ? 0 : 1;
+          const bSpec = b.category === 'Specialities' ? 0 : 1;
+          return aSpec - bSpec;
+        }));
+        setFridayDishes(fridayRes.data.data || []);
       } catch {
-        setDishes([]);
+        setAllDishes([]);
+        setFridayDishes([]);
       } finally {
         setLoading(false);
       }
@@ -53,15 +63,7 @@ export default function MenuPage() {
     { id: 'friday', label: t('menu.friday'), emoji: '🎉' },
   ];
 
-  const sortedAll = [...dishes].sort((a, b) => {
-    const aSpec = a.category === 'Specialities' ? 0 : 1;
-    const bSpec = b.category === 'Specialities' ? 0 : 1;
-    return aSpec - bSpec;
-  });
-
-  const filtered = activeTab === 'all'
-    ? sortedAll
-    : dishes.filter((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH');
+  const filtered = activeTab === 'all' ? allDishes : fridayDishes;
 
   return (
     <div className="pt-16 min-h-screen">
@@ -101,9 +103,7 @@ export default function MenuPage() {
                       activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
                     }`}
                   >
-                    {tab.id === 'all'
-                      ? dishes.length
-                      : dishes.filter((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH').length}
+                    {tab.id === 'all' ? allDishes.length : fridayDishes.length}
                   </span>
                 )}
               </button>
