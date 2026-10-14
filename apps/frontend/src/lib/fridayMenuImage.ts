@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+﻿import html2canvas from 'html2canvas';
 
 export interface FridayDish {
   id: string;
@@ -83,6 +83,10 @@ async function toDataUrl(src: string): Promise<string> {
   });
 }
 
+const svgUri = (svg: string) => `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+const FLAG_GB = svgUri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40" width="60" height="40"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg>');
+const FLAG_SE = svgUri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 10" width="16" height="10"><rect width="16" height="10" fill="#006AA7"/><rect x="5" width="2" height="10" fill="#FECC00"/><rect y="4" width="16" height="2" fill="#FECC00"/></svg>');
+
 const spiceLabel = (level: string) => {
   if (level === 'MILD') return '🟢 Mild';
   if (level === 'MEDIUM') return '🌶️ Medium';
@@ -109,18 +113,18 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;}
 .info-sep{color:#F2D4DE;font-size:16px;}
 .dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 36px;}
 .dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);padding:14px;}
-.dish-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
-.dish-thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid #F2E4E8;}
-.dish-info{flex:1;min-width:0;}
-.dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;margin-bottom:3px;}
-.dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:5px;}
-.dish-meta{font-size:10px;color:#555;}
-.dish-price{font-size:12px;font-weight:800;color:#C2185B;}
+.dish-photo{display:block;width:100%;height:220px;object-fit:cover;border-radius:10px;margin-bottom:12px;}
+.dish-info{margin-bottom:10px;}
+.dish-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:#1a1a1a;line-height:1.25;margin-bottom:3px;}
+.dish-desc{font-size:11px;color:#7A6055;line-height:1.5;margin-bottom:5px;}
+.dish-meta{font-size:11px;color:#555;}
+.dish-price{font-size:14px;font-weight:800;color:#C2185B;}
 .dish-dot{color:#ccc;}
 .dish-spice{font-size:10px;color:#7A4F00;}
 .dish-veg{font-size:10px;font-weight:700;color:#166534;}
 .dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
+.flag{width:15px;height:10px;vertical-align:-1px;margin-right:5px;border-radius:1px;}
 .ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
 .ing-text{font-size:10px;color:#444;line-height:1.55;}
 .footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
@@ -170,8 +174,8 @@ export async function generateFridayMenuImage(opts: FridayMenuOptions): Promise<
 
   const dishCards = dishes.map((d) => `
     <div class="dish-card">
+      <img class="dish-photo" src="${imageCache[d.id] || FALLBACK_IMG}" alt="" />
       <div class="dish-top">
-        <img class="dish-thumb" src="${imageCache[d.id] || FALLBACK_IMG}" alt="" />
         <div class="dish-info">
           <h3 class="dish-name">${esc(d.name)}</h3>
           <p class="dish-desc">${esc(d.description)}</p>
@@ -186,11 +190,11 @@ export async function generateFridayMenuImage(opts: FridayMenuOptions): Promise<
       </div>
       <div class="ing-section">
         <div class="ing-row">
-          <span class="ing-lang">🇬🇧 Ingredients</span>
+          <span class="ing-lang"><img class="flag" src="${FLAG_GB}" alt="" />Ingredients</span>
           <p class="ing-text">${esc(d.ingredients)}</p>
         </div>
         <div class="ing-row">
-          <span class="ing-lang">🇸🇪 Ingredienser</span>
+          <span class="ing-lang"><img class="flag" src="${FLAG_SE}" alt="" />Ingredienser</span>
           <p class="ing-text">${esc(d.ingredientsSv)}</p>
         </div>
       </div>

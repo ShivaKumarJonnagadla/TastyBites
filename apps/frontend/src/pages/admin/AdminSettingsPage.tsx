@@ -1,8 +1,20 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Save, RefreshCw } from 'lucide-react';
+import { Save, RefreshCw, Trash2 } from 'lucide-react';
 import { settingsApi, authApi } from '../../lib/api';
 import toast from 'react-hot-toast';
+
+async function purgeAppCache(): Promise<void> {
+  // Remove service workers (PWA) and every Cache Storage entry, then the caller reloads fresh from the server.
+  if ('serviceWorker' in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map((r) => r.unregister()));
+  }
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => caches.delete(k)));
+  }
+}
 
 const SETTING_GROUPS = [
   {
@@ -45,6 +57,7 @@ const SETTING_GROUPS = [
 ];
 
 export default function AdminSettingsPage() {
+  const [purging, setPurging] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -197,6 +210,31 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Cache */}
+      <div className="card p-6">
+        <h2 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">🧹 Clear Cache</h2>
+        <p className="text-sm text-gray-500 mb-4 max-w-xl">
+          Not seeing the latest deploy? This removes the app's cached files and service worker on this device, then reloads the site fresh from Vercel.
+        </p>
+        <button
+          onClick={async () => {
+            setPurging(true);
+            try {
+              await purgeAppCache();
+              toast.success('Cache cleared — reloading…');
+              setTimeout(() => window.location.reload(), 600);
+            } catch {
+              toast.error('Failed to clear cache');
+              setPurging(false);
+            }
+          }}
+          disabled={purging}
+          className="btn-secondary"
+        >
+          <Trash2 size={16} /> {purging ? 'Clearing…' : 'Clear Cache & Reload'}
+        </button>
+      </div>
     </div>
   );
 }
