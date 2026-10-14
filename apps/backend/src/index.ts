@@ -1,4 +1,4 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -64,6 +64,12 @@ app.get('/health', (_req, res) => {
 });
 
 // Routes
+// Live data (menu, orders, settings) must never be stored by browsers, the PWA, or any CDN
+app.use('/api', (req, res, next) => {
+  if (req.method === 'GET') res.set('Cache-Control', 'no-store, max-age=0');
+  next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/dishes', dishRoutes);
 app.use('/api/orders', orderRoutes);

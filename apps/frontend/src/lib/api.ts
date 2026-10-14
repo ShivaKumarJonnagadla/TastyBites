@@ -10,6 +10,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // Cache-buster: guarantees a GET is never answered from a stored copy (old SW, browser or proxy cache)
+  if ((config.method || 'get').toLowerCase() === 'get') config.params = { ...config.params, _: Date.now() };
   return config;
 });
 
