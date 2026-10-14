@@ -124,8 +124,8 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;}
 .dish-veg{font-size:10px;font-weight:700;color:#166534;}
 .dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
-.ing-row{display:flex;align-items:flex-start;gap:7px;}
-.flag{width:18px;height:12px;flex-shrink:0;margin-top:2px;border-radius:1px;box-shadow:0 0 0 .5px rgba(0,0,0,.15);}
+.ing-row{display:flex;align-items:center;gap:8px;}
+.flag{width:15px;height:10px;flex-shrink:0;display:block;border-radius:1px;box-shadow:0 0 0 .5px rgba(0,0,0,.15);}
 .ing-text{flex:1;min-width:0;font-size:10px;color:#444;line-height:1.55;}
 .footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
 .footer-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:#FFF3F7;}
