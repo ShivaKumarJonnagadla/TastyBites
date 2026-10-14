@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Save, RefreshCw, Trash2 } from 'lucide-react';
+import { Save, RefreshCw, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
 import { settingsApi, authApi, adminApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
@@ -58,6 +58,7 @@ const SETTING_GROUPS = [
 
 export default function AdminSettingsPage() {
   const [purging, setPurging] = useState(false);
+  const [purgeDone, setPurgeDone] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
@@ -226,14 +227,21 @@ export default function AdminSettingsPage() {
               const err = serverResult.reason as { response?: { data?: { message?: string } } };
               toast.error(err.response?.data?.message || 'Vercel purge skipped — this device was cleared');
             } else {
+              setPurgeDone(true);
               toast.success('Cache cleared — reloading…');
             }
-            setTimeout(() => window.location.reload(), serverResult.status === 'rejected' ? 2500 : 300);
+            setTimeout(() => window.location.reload(), serverResult.status === 'rejected' ? 2500 : 1200);
           }}
           disabled={purging}
           className="btn-secondary"
         >
-          <Trash2 size={16} /> {purging ? 'Clearing…' : 'Clear Cache & Reload'}
+          {purgeDone ? (
+            <><CheckCircle2 size={16} className="text-green-600" /> Cache cleared</>
+          ) : purging ? (
+            <><Loader2 size={16} className="animate-spin" /> Clearing cache…</>
+          ) : (
+            <><Trash2 size={16} /> Clear Cache & Reload</>
+          )}
         </button>
       </div>
     </div>
