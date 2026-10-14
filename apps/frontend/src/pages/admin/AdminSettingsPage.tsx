@@ -220,21 +220,15 @@ export default function AdminSettingsPage() {
         <button
           onClick={async () => {
             setPurging(true);
-            try {
-              try {
-                await adminApi.purgeCache();
-                toast.success('Vercel CDN cache purged');
-              } catch (e) {
-                const msg = (e as { response?: { data?: { message?: string } } }).response?.data?.message;
-                toast.error(msg || 'Vercel CDN purge failed — clearing this device only');
-              }
-              await purgeAppCache();
-              toast.success('Device cache cleared — reloading…');
-              setTimeout(() => window.location.reload(), 600);
-            } catch {
-              toast.error('Failed to clear cache');
-              setPurging(false);
+            // Clear this device and ask Vercel to purge at the same time; the server call is capped at 4s.
+            const [serverResult] = await Promise.allSettled([adminApi.purgeCache(), purgeAppCache()]);
+            if (serverResult.status === 'rejected') {
+              const err = serverResult.reason as { response?: { data?: { message?: string } } };
+              toast.error(err.response?.data?.message || 'Vercel purge skipped — this device was cleared');
+            } else {
+              toast.success('Cache cleared — reloading…');
             }
+            setTimeout(() => window.location.reload(), serverResult.status === 'rejected' ? 2500 : 300);
           }}
           disabled={purging}
           className="btn-secondary"

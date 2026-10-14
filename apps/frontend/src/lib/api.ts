@@ -74,7 +74,7 @@ export const settingsApi = {
 export const adminApi = {
   getWhatsAppMessage: () => api.get('/admin/whatsapp-message'),
   getFridayMenuImage: () => api.get('/admin/friday-menu-image'),
-  purgeCache: () => api.post('/admin/purge-cache'),
+  purgeCache: () => api.post('/admin/purge-cache', undefined, { timeout: 4000 }),
 };
 
 // Upload
