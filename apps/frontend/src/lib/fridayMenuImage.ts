@@ -124,9 +124,9 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;}
 .dish-veg{font-size:10px;font-weight:700;color:#166534;}
 .dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
 .ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
-.flag{width:15px;height:10px;vertical-align:-1px;margin-right:5px;border-radius:1px;}
-.ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
-.ing-text{font-size:10px;color:#444;line-height:1.55;}
+.ing-row{display:flex;align-items:flex-start;gap:7px;}
+.flag{width:18px;height:12px;flex-shrink:0;margin-top:2px;border-radius:1px;box-shadow:0 0 0 .5px rgba(0,0,0,.15);}
+.ing-text{flex:1;min-width:0;font-size:10px;color:#444;line-height:1.55;}
 .footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
 .footer-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:#FFF3F7;}
 .footer-divider{background:#F2E4E8;}
@@ -190,11 +190,11 @@ export async function generateFridayMenuImage(opts: FridayMenuOptions): Promise<
       </div>
       <div class="ing-section">
         <div class="ing-row">
-          <span class="ing-lang"><img class="flag" src="${FLAG_GB}" alt="" />Ingredients</span>
+          <img class="flag" src="${FLAG_GB}" alt="Ingredients" />
           <p class="ing-text">${esc(d.ingredients)}</p>
         </div>
         <div class="ing-row">
-          <span class="ing-lang"><img class="flag" src="${FLAG_SE}" alt="" />Ingredienser</span>
+          <img class="flag" src="${FLAG_SE}" alt="Ingredienser" />
           <p class="ing-text">${esc(d.ingredientsSv)}</p>
         </div>
       </div>
