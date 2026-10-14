@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, ChevronDown, Phone, Clock, MapPin, MessageCircle, Info } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { dishApi } from '../lib/api';
+import { useMenuVersion } from '../lib/menuVersion';
 import MenuSection from '../components/menu/MenuSection';
 import { GREETING_MESSAGES, MARKETING_MESSAGES, MARKETING_MESSAGES_SV } from '../lib/constants';
 
@@ -102,10 +103,12 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  const menuVersion = useMenuVersion((s) => s.version);
+
   useEffect(() => {
     const fetchDishes = async () => {
       try {
-        setLoading(true);
+        if (menuVersion === null) setLoading(true);
         const [allRes, fridayRes] = await Promise.all([
           dishApi.getAll({ menuType: 'DAILY', isAvailable: 'true' }),
           dishApi.getAll({ menuType: 'FRIDAY', isAvailable: 'true' }),
@@ -123,7 +126,7 @@ export default function HomePage() {
       }
     };
     fetchDishes();
-  }, []);
+  }, [menuVersion]);
 
   // Trim the last VIDEO_TRIM_END_SECS of the video so logo/contact section is hidden
   useEffect(() => {

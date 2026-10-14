@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { dishApi } from '../lib/api';
+import { useMenuVersion } from '../lib/menuVersion';
 import MenuSection from '../components/menu/MenuSection';
 
 interface Dish {
@@ -31,6 +32,7 @@ export default function MenuPage() {
   const [allDishes, setAllDishes] = useState<Dish[]>([]);
   const [fridayDishes, setFridayDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const menuVersion = useMenuVersion((s) => s.version);
   const [activeTab, setActiveTab] = useState<Tab>(
     searchParams.get('tab') === 'friday' ? 'friday' : 'all'
   );
@@ -56,7 +58,7 @@ export default function MenuPage() {
       }
     };
     fetchDishes();
-  }, []);
+  }, [menuVersion]);
 
   const tabs: { id: Tab; label: string; emoji: string }[] = [
     { id: 'all', label: t('menu.allDishes'), emoji: '🍽️' },

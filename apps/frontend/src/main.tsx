@@ -5,8 +5,10 @@ import App from './App';
 import './index.css';
 import './i18n';
 import { setupAppUpdates } from './lib/appUpdates';
+import { startMenuVersionWatcher } from './lib/menuVersion';
 
 setupAppUpdates();
+startMenuVersionWatcher();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

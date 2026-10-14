@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
+import { bumpMenuVersion } from '../services/menuVersion';
 
 export async function getSettings(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -19,6 +20,7 @@ export async function updateSetting(req: Request, res: Response, next: NextFunct
       update: { value: req.body.value },
       create: { key: req.params.key, value: req.body.value },
     });
+    await bumpMenuVersion();
     res.json({ success: true, data: setting });
   } catch (err) {
     next(err);
@@ -37,6 +39,7 @@ export async function getPickupMessages(_req: Request, res: Response, next: Next
 export async function createPickupMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const msg = await prisma.pickupMessage.create({ data: req.body });
+    await bumpMenuVersion();
     res.status(201).json({ success: true, data: msg });
   } catch (err) {
     next(err);
@@ -49,6 +52,7 @@ export async function updatePickupMessage(req: Request, res: Response, next: Nex
     if (!existing) return next(new AppError('Pickup message not found', 404));
 
     const msg = await prisma.pickupMessage.update({ where: { id: req.params.id }, data: req.body });
+    await bumpMenuVersion();
     res.json({ success: true, data: msg });
   } catch (err) {
     next(err);

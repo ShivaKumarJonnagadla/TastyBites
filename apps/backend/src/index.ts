@@ -2,6 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { getMenuVersion } from './services/menuVersion';
 import rateLimit from 'express-rate-limit';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
@@ -41,6 +42,16 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Lightweight change-detector the site polls; deliberately outside the rate limiter so it can't use up visitors' request budget
+app.get('/api/menu-version', async (_req, res, next) => {
+  try {
+    res.set('Cache-Control', 'no-store, max-age=0');
+    res.json({ success: true, version: await getMenuVersion() });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Rate limiting
 const limiter = rateLimit({

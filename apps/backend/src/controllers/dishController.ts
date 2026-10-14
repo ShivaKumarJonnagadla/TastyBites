@@ -1,6 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
+import { bumpMenuVersion } from '../services/menuVersion';
 
 export async function getDishes(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -72,6 +73,7 @@ export async function getDish(req: Request, res: Response, next: NextFunction): 
 export async function createDish(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const dish = await prisma.dish.create({ data: req.body });
+    await bumpMenuVersion();
     res.status(201).json({ success: true, data: dish, message: 'Dish created successfully' });
   } catch (err) {
     next(err);
@@ -86,6 +88,7 @@ export async function updateDish(req: Request, res: Response, next: NextFunction
     if (!existing) return next(new AppError('Dish not found', 404));
 
     const dish = await prisma.dish.update({ where: { id: req.params.id }, data: req.body });
+    await bumpMenuVersion();
     res.json({ success: true, data: dish, message: 'Dish updated successfully' });
   } catch (err) {
     next(err);
@@ -103,6 +106,7 @@ export async function deleteDish(req: Request, res: Response, next: NextFunction
       where: { id: req.params.id },
       data: { deletedAt: new Date() },
     });
+    await bumpMenuVersion();
     res.json({ success: true, message: 'Dish deleted successfully' });
   } catch (err) {
     next(err);
@@ -120,6 +124,7 @@ export async function toggleAvailability(req: Request, res: Response, next: Next
       where: { id: req.params.id },
       data: { isAvailable: !dish.isAvailable },
     });
+    await bumpMenuVersion();
     res.json({
       success: true,
       data: updated,
