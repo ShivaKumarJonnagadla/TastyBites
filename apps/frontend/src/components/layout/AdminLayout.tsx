@@ -1,6 +1,5 @@
 ﻿import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, UtensilsCrossed, ShoppingBag,
   Settings, Megaphone, LogOut, Menu, ChevronRight, BarChart2
@@ -125,35 +124,26 @@ export default function AdminLayout() {
         />
       </aside>
 
-      {/* Mobile Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-              onClick={closeSidebar}
-            />
-            <motion.aside
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ type: 'spring', damping: 25 }}
-              className="fixed left-0 top-0 bottom-0 w-72 bg-white z-50 lg:hidden"
-            >
-              <SidebarContent
-                onClose={closeSidebar}
-                currentPath={location.pathname}
-                admin={admin}
-                onLogout={handleLogout}
-              />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-
+      {/* Mobile Sidebar (plain CSS transitions so it can never get stuck open) */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-200 ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={closeSidebar}
+        aria-hidden="true"
+      />
+      <aside
+        className={`fixed left-0 top-0 bottom-0 w-72 bg-white z-50 lg:hidden transition-transform duration-200 ease-out ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
+        }`}
+      >
+        <SidebarContent
+          onClose={closeSidebar}
+          currentPath={location.pathname}
+          admin={admin}
+          onLogout={handleLogout}
+        />
+      </aside>
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
