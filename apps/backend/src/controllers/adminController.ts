@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+﻿import { Request, Response, NextFunction } from 'express';
 import prisma from '../utils/prisma';
 
 export async function generateWhatsAppMessage(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -83,18 +83,19 @@ export async function generateFridayMenuImage(_req: Request, res: Response, next
 
 export async function purgeVercelCache(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const token = process.env.VERCEL_API_TOKEN;
-    const projectId = process.env.VERCEL_PROJECT_ID;
+    // Not named VERCEL_* because Vercel injects its own VERCEL_PROJECT_ID (the backend's) into every deployment.
+    const token = process.env.PURGE_VERCEL_TOKEN;
+    const projectId = process.env.PURGE_VERCEL_PROJECT_ID;
     if (!token || !projectId) {
       res.status(503).json({
         success: false,
-        message: 'Cache purge is not configured. Add VERCEL_API_TOKEN and VERCEL_PROJECT_ID to the backend environment variables.',
+        message: 'Cache purge is not configured. Add PURGE_VERCEL_TOKEN and PURGE_VERCEL_PROJECT_ID to the backend environment variables.',
       });
       return;
     }
 
     const params = new URLSearchParams({ projectIdOrName: projectId });
-    if (process.env.VERCEL_TEAM_ID) params.set('teamId', process.env.VERCEL_TEAM_ID);
+    if (process.env.PURGE_VERCEL_TEAM_ID) params.set('teamId', process.env.PURGE_VERCEL_TEAM_ID);
 
     // "*" purges every cache tag for the project (same as the Vercel dashboard's wildcard purge).
     const vercelRes = await fetch(`https://api.vercel.com/v1/edge-cache/invalidate-by-tags?${params}`, {
