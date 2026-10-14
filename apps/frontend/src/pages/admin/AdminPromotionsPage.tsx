@@ -1,14 +1,25 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, RefreshCw, MessageCircle, Image } from 'lucide-react';
+import { Copy, RefreshCw, MessageCircle, Image, Download, Share2 } from 'lucide-react';
 import { adminApi } from '../../lib/api';
+import {
+  DELIVERY_LOCATIONS,
+  FridayDish,
+  FridayMenuResult,
+  applySavedFridayOrder,
+  downloadFridayMenu,
+  generateFridayMenuImage,
+  upcomingFridayDatetimeLocal,
+} from '../../lib/fridayMenuImage';
 import toast from 'react-hot-toast';
 
 export default function AdminPromotionsPage() {
   const [whatsapp, setWhatsapp] = useState('');
   const [loadingWA, setLoadingWA] = useState(false);
   const [loadingImg, setLoadingImg] = useState(false);
-  const [fridayDishes, setFridayDishes] = useState<{ name: string; price: number; category: string }[]>([]);
+  const [fridayImage, setFridayImage] = useState<FridayMenuResult | null>(null);
+  const [locationId, setLocationId] = useState(DELIVERY_LOCATIONS[0].id);
+  const [deliveryDateTime, setDeliveryDateTime] = useState(upcomingFridayDatetimeLocal);
 
   const generateWhatsApp = async () => {
     setLoadingWA(true);
@@ -27,12 +38,30 @@ export default function AdminPromotionsPage() {
     setLoadingImg(true);
     try {
       const res = await adminApi.getFridayMenuImage();
-      setFridayDishes(res.data.data.dishes || []);
-      toast.success('Friday menu data loaded!');
+      const dishes = applySavedFridayOrder<FridayDish>(res.data.data.dishes || []);
+      if (dishes.length === 0) {
+        toast.error('No available dishes are enabled for the Friday menu');
+        return;
+      }
+      setFridayImage(await generateFridayMenuImage({ dishes, locationId, deliveryDateTime }));
+      toast.success('Friday menu image generated!');
     } catch {
-      toast.error('Failed to load Friday menu');
+      toast.error('Failed to generate Friday menu image');
     } finally {
       setLoadingImg(false);
+    }
+  };
+
+  const shareFridayImage = async () => {
+    if (!fridayImage) return;
+    const file = new File([fridayImage.blob], fridayImage.fileName, { type: 'image/png' });
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: `Tasty Bites Friday Menu — Week ${fridayImage.weekNum}` });
+      } catch { /* user cancelled */ }
+    } else {
+      downloadFridayMenu(fridayImage);
+      toast('Sharing isn\'t supported here — image downloaded instead');
     }
   };
 
@@ -54,7 +83,7 @@ export default function AdminPromotionsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-display font-bold text-gray-900">Promotions</h1>
-        <p className="text-gray-500 text-sm mt-0.5">Generate WhatsApp promotions and Friday menu images</p>
+        <p className="text-gray-500 text-sm mt-0.5">Generate WhatsApp promotions and the Friday menu image</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -115,8 +144,21 @@ export default function AdminPromotionsPage() {
               <Image size={18} className="text-purple-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">Friday Menu Preview</h2>
-              <p className="text-xs text-gray-500">View Friday special menu</p>
+              <h2 className="font-semibold text-gray-900">Friday Menu Image</h2>
+              <p className="text-xs text-gray-500">Generate a shareable menu image for the upcoming Friday</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Delivery location</label>
+              <select value={locationId} onChange={(e) => setLocationId(e.target.value)} className="input-field py-2 text-sm">
+                {DELIVERY_LOCATIONS.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Delivery date &amp; time</label>
+              <input type="datetime-local" value={deliveryDateTime} onChange={(e) => setDeliveryDateTime(e.target.value)} className="input-field py-2 text-sm" />
             </div>
           </div>
 
@@ -129,35 +171,28 @@ export default function AdminPromotionsPage() {
               <motion.div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                 animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }} />
             ) : (
-              <><RefreshCw size={16} /> Load Friday Menu</>
+              <><RefreshCw size={16} /> Generate Friday Menu</>
             )}
           </button>
 
-          {fridayDishes.length > 0 && (
+          {fridayImage && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              {/* Menu Card Preview */}
-              <div className="border-2 border-spice-200 rounded-xl overflow-hidden mb-3">
-                <div className="bg-spice-500 px-5 py-3 text-white text-center">
-                  <p className="font-display font-bold text-lg tracking-widest">TASTY BITES</p>
-                  <p className="text-xs font-medium tracking-wider text-spice-100">FOOD MENU — FRIDAY SPECIAL</p>
-                </div>
-                <div className="p-4 space-y-3">
-                  {fridayDishes.map((d, i) => (
-                    <div key={i} className="border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start">
-                        <p className="font-semibold text-gray-900 text-sm">{d.name}</p>
-                        <span className="text-spice-500 font-bold text-sm ml-2 flex-shrink-0">{d.price} kr</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="bg-spice-50 px-5 py-2 text-center">
-                  <p className="text-xs font-semibold text-spice-600">For Pre-orders WhatsApp: +46769677497</p>
-                </div>
+              <img
+                src={fridayImage.dataUrl}
+                alt={`Friday menu week ${fridayImage.weekNum}`}
+                className="w-full rounded-xl border border-gray-200 mb-3"
+              />
+              <div className="flex gap-2">
+                <button onClick={() => downloadFridayMenu(fridayImage)} className="btn-secondary flex-1 text-sm py-2.5">
+                  <Download size={15} /> Download
+                </button>
+                <button
+                  onClick={shareFridayImage}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 transition-colors"
+                >
+                  <Share2 size={15} /> Share
+                </button>
               </div>
-              <p className="text-xs text-gray-500 text-center">
-                Screenshot this card to share on social media
-              </p>
             </motion.div>
           )}
         </div>

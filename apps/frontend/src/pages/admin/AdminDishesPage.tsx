@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import html2canvas from 'html2canvas';
+﻿import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit, Trash2, Eye, EyeOff, Search, X, Upload, CheckSquare, Square, CalendarDays, Star, Layers, XCircle, FileDown, ChevronUp, ChevronDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -8,6 +7,7 @@ import { z } from 'zod';
 import { dishApi, uploadApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 import { DISH_CATEGORIES } from '../../lib/constants';
+import { DELIVERY_LOCATIONS, downloadFridayMenu, formatDeliveryTime, generateFridayMenuImage, upcomingFridayDatetimeLocal } from '../../lib/fridayMenuImage';
 
 const SPICE_OPTIONS = [
   { value: 'MILD', label: '🌿 Mild' },
@@ -76,45 +76,6 @@ const statusColors: Record<string, string> = {
   BOTH: 'bg-green-100 text-green-700',
 };
 
-const FALLBACK_IMG = 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&h=400&fit=crop';
-
-const DELIVERY_LOCATIONS = [
-  { id: 'kry', name: 'Kry Vårdcentral Älmhult Parkering', address: 'Gotthards gata 5, 343 36 Älmhult' },
-  { id: 'grillen', name: 'Grillen Parkering', address: 'Ikeagatan 2, 343 36 Älmhult' },
-];
-
-function getWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-}
-
-function nextFridayLabel(): string {
-  const d = new Date();
-  const daysUntilFriday = (5 - d.getDay() + 7) % 7 || 7;
-  d.setDate(d.getDate() + daysUntilFriday);
-  return d.toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function nextFridayDatetimeLocal(): string {
-  const d = new Date();
-  const daysUntilFriday = (5 - d.getDay() + 7) % 7 || 7;
-  d.setDate(d.getDate() + daysUntilFriday);
-  d.setHours(12, 0, 0, 0);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function formatDeliveryTime(datetimeLocal: string): string {
-  if (!datetimeLocal) return '';
-  const d = new Date(datetimeLocal);
-  const dateStr = d.toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  const timeStr = d.toLocaleTimeString('en-SE', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${dateStr} · ${timeStr}`;
-}
-
 export default function AdminDishesPage() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,7 +88,7 @@ export default function AdminDishesPage() {
   const [menuTypeFilter, setMenuTypeFilter] = useState<'ALL' | 'DAILY' | 'FRIDAY' | 'BOTH'>('ALL');
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfLocationId, setPdfLocationId] = useState('kry');
-  const [pdfDeliveryTime, setPdfDeliveryTime] = useState(nextFridayDatetimeLocal);
+  const [pdfDeliveryTime, setPdfDeliveryTime] = useState(upcomingFridayDatetimeLocal);
   const [exportOrder, setExportOrder] = useState<string[]>([]);
   const [fridayDishOrder, setFridayDishOrder] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('tb_fridayDishOrder') || '[]'); } catch { return []; }
@@ -315,219 +276,16 @@ export default function AdminDishesPage() {
     });
   };
 
-  const handleExportMenu = async (locationId: string, deliveryTime: string, dishOrder: string[], rawDeliveryDate: string) => {
+  const handleExportMenu = async (locationId: string, _deliveryTimeLabel: string, dishOrder: string[], rawDeliveryDate: string) => {
     const selectedDishes = dishOrder.map((id) => dishes.find((d) => d.id === id)).filter(Boolean) as Dish[];
     if (selectedDishes.length === 0) return;
-    const loc = DELIVERY_LOCATIONS.find((l) => l.id === locationId) || DELIVERY_LOCATIONS[0];
-
-    // Fetch logo as base64 so it renders without CORS issues
-    let logoSrc = '';
-    try {
-      const res = await fetch('/logo.png');
-      const blob = await res.blob();
-      logoSrc = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    } catch { /* logo unavailable — will hide gracefully */ }
-
-    // Pre-fetch all dish images as base64 to avoid CORS taint issues
-    const imageCache: Record<string, string> = {};
-    await Promise.all(selectedDishes.map(async (dish) => {
-      const src = dish.imageUrl || FALLBACK_IMG;
-      try {
-        const res = await fetch(src);
-        const blob = await res.blob();
-        imageCache[dish.id] = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } catch {
-        imageCache[dish.id] = FALLBACK_IMG;
-      }
-    }));
-
-    const weekNum = getWeekNumber(rawDeliveryDate ? new Date(rawDeliveryDate) : new Date());
-    const fridayLabel = nextFridayLabel();
-
-    const spiceLabel = (level: string) => {
-      if (level === 'MILD') return '🟢 Mild';
-      if (level === 'MEDIUM') return '🌶️ Medium';
-      if (level === 'HOT') return '🌶️🌶️ Hot';
-      return '🌶️🌶️🌶️ Extra Hot';
-    };
-
-    const dishCards = selectedDishes.map((dish) => `
-      <div class="dish-card">
-        <div class="dish-top">
-          <img class="dish-thumb" src="${imageCache[dish.id] || FALLBACK_IMG}" alt="${dish.name.replace(/"/g, '&quot;')}" />
-          <div class="dish-info">
-            <h3 class="dish-name">${dish.name}</h3>
-            <p class="dish-desc">${dish.description}</p>
-            <p class="dish-meta">
-              <span class="dish-price">SEK ${Number(dish.price)}</span>
-              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
-              <span class="dish-spice">${spiceLabel(dish.spiceLevel)}</span>
-              <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
-              <span class="${dish.isVegetarian ? 'dish-veg' : 'dish-nonveg'}">${dish.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</span>
-            </p>
-          </div>
-        </div>
-        <div class="ing-section">
-          <div class="ing-row">
-            <span class="ing-lang">🇬🇧 Ingredients</span>
-            <p class="ing-text">${dish.ingredients}</p>
-          </div>
-          <div class="ing-row">
-            <span class="ing-lang">🇸🇪 Ingredienser</span>
-            <p class="ing-text">${dish.ingredientsSv}</p>
-          </div>
-        </div>
-      </div>
-    `).join('');
-
-    const menuCss = `
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-/* HEADER */
-.header{background:linear-gradient(135deg,#C2185B 0%,#880E4F 100%);color:#fff;padding:18px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
-.header-left{display:flex;align-items:center;gap:14px;}
-.logo-wrap{background:rgba(255,255,255,0.92);border-radius:10px;padding:5px 10px;display:inline-flex;align-items:center;justify-content:center;}
-.logo-img{height:48px;width:auto;object-fit:contain;}
-.brand{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;margin-bottom:7px;}
-.tagline{font-size:10px;opacity:.75;letter-spacing:2px;text-transform:uppercase;}
-.header-right{text-align:right;flex-shrink:0;}
-.week-label{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;opacity:.8;margin-bottom:2px;}
-.week-num{font-size:32px;font-weight:700;line-height:1.1;margin-bottom:3px;}
-.friday-date{font-size:10px;opacity:.65;letter-spacing:1px;text-transform:uppercase;}
-/* INFO STRIP */
-.info-strip{background:#FFF3F7;border-top:3px solid #C2185B;border-bottom:1px solid #F2D4DE;padding:8px 36px;display:flex;align-items:center;gap:28px;font-size:11.5px;color:#7A6055;}
-.info-strip b{color:#C2185B;}
-.info-sep{color:#F2D4DE;font-size:16px;}
-/* DISHES */
-.dishes-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px 36px;}
-.dish-card{border:1.5px solid #F2E4E8;border-radius:12px;overflow:hidden;break-inside:avoid;page-break-inside:avoid;background:#fff;box-shadow:0 2px 10px rgba(194,24,91,.07);padding:14px;}
-.dish-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;}
-.dish-thumb{width:72px;height:72px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2.5px solid #F2E4E8;}
-.dish-info{flex:1;min-width:0;}
-.dish-name{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.25;margin-bottom:3px;}
-.dish-desc{font-size:10.5px;color:#7A6055;line-height:1.5;margin-bottom:5px;}
-.dish-meta{font-size:10px;color:#555;}
-.dish-price{font-size:12px;font-weight:800;color:#C2185B;}
-.dish-dot{color:#ccc;}
-.dish-spice{font-size:10px;color:#7A4F00;}
-.dish-veg{font-size:10px;font-weight:700;color:#166534;}
-.dish-nonveg{font-size:10px;font-weight:700;color:#991B1B;}
-.ing-section{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #F2E4E8;}
-.ing-lang{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#C2185B;margin-bottom:2px;}
-.ing-text{font-size:10px;color:#444;line-height:1.55;}
-/* FOOTER */
-.footer{margin:0 36px 22px;border:1.5px solid #F2E4E8;border-radius:10px;overflow:hidden;}
-.footer-grid{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:#FFF3F7;}
-.footer-divider{background:#F2E4E8;}
-.footer-col{padding:14px 18px;}
-.footer-col-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#C2185B;margin-bottom:8px;}
-.footer-step{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px;}
-.step-num{color:#C2185B;font-size:11px;font-weight:800;min-width:14px;display:inline-block;flex-shrink:0;}
-.footer-step p{font-size:10.5px;color:#555;line-height:1.5;}
-.footer-step p b{color:#1a1a1a;}
-.footer-contact-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
-.footer-contact-row b{color:#C2185B;}
-.footer-pay-row{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;margin-bottom:5px;}
-.footer-pay-row b{color:#1a1a1a;}
-`;
-
-    const menuBody = `<div class="header">
-  <div class="header-left">
-    ${logoSrc ? `<div class="logo-wrap"><img class="logo-img" src="${logoSrc}" alt="Tasty Bites" /></div>` : ''}
-    <div>
-      <div class="brand">Tasty Bites</div>
-      <div class="tagline">Authentic Indian &middot; &Auml;lmhult, Sweden</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="week-label">Friday Menu</div>
-    <div class="week-num">Week ${weekNum}</div>
-    <div class="friday-date">${fridayLabel}</div>
-  </div>
-</div>
-<div class="info-strip">
-  <span>&#128205; <b>${loc.name}</b> &mdash; ${loc.address}</span>
-  <span class="info-sep">&bull;</span>
-  <span>&#128336; Delivery: <b>${deliveryTime}</b></span>
-  <span class="info-sep">&bull;</span>
-  <span>&#128172; <b>+46 769677497</b></span>
-  <span class="info-sep">&bull;</span>
-  <span>&#127758; tastybites-almhult.vercel.app</span>
-</div>
-<div class="dishes-grid">${dishCards}</div>
-<div class="footer">
-  <div class="footer-grid">
-    <div class="footer-col">
-      <div class="footer-col-title">&#128203; How to Order Online</div>
-      <div class="footer-step"><span class="step-num">1</span><p>Visit <b>tastybites-almhult.vercel.app</b> and open <b>Friday Menu</b></p></div>
-      <div class="footer-step"><span class="step-num">2</span><p>Choose your dishes &amp; portions, then <b>place the order</b> directly on the site</p></div>
-    </div>
-    <div class="footer-divider"></div>
-    <div class="footer-col">
-      <div class="footer-col-title">&#128172; Order via WhatsApp</div>
-      <div class="footer-step"><span class="step-num">3</span><p>Send a message to <b>+46 769677497</b> with your dish selection</p></div>
-    </div>
-    <div class="footer-divider"></div>
-    <div class="footer-col">
-      <div class="footer-col-title">&#128205; Delivery</div>
-      <div class="footer-pay-row" style="font-weight:600;">&#128205; ${loc.name}</div>
-      <div style="font-size:10px;color:#888;margin:2px 0 6px 20px;">${loc.address}</div>
-      <div class="footer-pay-row">&#128336; ${deliveryTime}</div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid #F2E4E8;">
-        <div class="footer-pay-row">&#128241; <b>Swish</b> &nbsp;+46 769677497</div>
-        <div class="footer-pay-row">&#128181; <b>Cash</b> &nbsp;on pickup</div>
-      </div>
-    </div>
-  </div>
-</div>
-`;
-
     const toastId = toast.loading('Generating menu image…');
-    const container = document.createElement('div');
-    container.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;background:#fff;z-index:-9999;';
-    container.innerHTML = `<style>${menuCss}</style>${menuBody}`;
-    document.body.appendChild(container);
-
-    // Wait for all images inside the container to load
-    const imgs = Array.from(container.querySelectorAll('img'));
-    await Promise.all(imgs.map(img => new Promise<void>(resolve => {
-      if (img.complete) { resolve(); return; }
-      img.onload = () => resolve();
-      img.onerror = () => resolve();
-    })));
-
-    // Ensure fonts are ready
-    await document.fonts.ready;
-
     try {
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        width: 960,
-        windowWidth: 960,
-      });
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `tastybites-menu-week${weekNum}.png`;
-      link.href = dataUrl;
-      link.click();
+      const result = await generateFridayMenuImage({ dishes: selectedDishes, locationId, deliveryDateTime: rawDeliveryDate });
+      downloadFridayMenu(result);
       toast.success('Menu exported as PNG!', { id: toastId });
     } catch {
       toast.error('Failed to generate image', { id: toastId });
-    } finally {
-      document.body.removeChild(container);
     }
   };
 
