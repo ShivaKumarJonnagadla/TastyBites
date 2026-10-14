@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+﻿import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, UtensilsCrossed, ShoppingBag,
@@ -105,6 +105,9 @@ export default function AdminLayout() {
   };
 
   const closeSidebar = () => setSidebarOpen(false);
+
+  // Close the mobile menu whenever the page changes, however navigation was triggered
+  useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
   const activeLabel = navItems.find((i) =>
     i.exact ? location.pathname === i.to : location.pathname.startsWith(i.to)
