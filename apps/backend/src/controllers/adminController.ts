@@ -80,3 +80,40 @@ export async function generateFridayMenuImage(_req: Request, res: Response, next
     next(err);
   }
 }
+
+export async function purgeVercelCache(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const token = process.env.VERCEL_API_TOKEN;
+    const projectId = process.env.VERCEL_PROJECT_ID;
+    if (!token || !projectId) {
+      res.status(503).json({
+        success: false,
+        message: 'Cache purge is not configured. Add VERCEL_API_TOKEN and VERCEL_PROJECT_ID to the backend environment variables.',
+      });
+      return;
+    }
+
+    const params = new URLSearchParams({ projectIdOrName: projectId });
+    if (process.env.VERCEL_TEAM_ID) params.set('teamId', process.env.VERCEL_TEAM_ID);
+
+    // "*" purges every cache tag for the project (same as the Vercel dashboard's wildcard purge).
+    const vercelRes = await fetch(`https://api.vercel.com/v1/edge-cache/invalidate-by-tags?${params}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tags: ['*'] }),
+    });
+
+    if (!vercelRes.ok) {
+      const detail = await vercelRes.text().catch(() => '');
+      res.status(502).json({
+        success: false,
+        message: `Vercel rejected the purge request (HTTP ${vercelRes.status}). ${detail.slice(0, 300)}`,
+      });
+      return;
+    }
+
+    res.json({ success: true, data: { purgedAt: new Date().toISOString() } });
+  } catch (err) {
+    next(err);
+  }
+}

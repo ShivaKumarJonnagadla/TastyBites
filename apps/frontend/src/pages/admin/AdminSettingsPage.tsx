@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Save, RefreshCw, Trash2 } from 'lucide-react';
-import { settingsApi, authApi } from '../../lib/api';
+import { settingsApi, authApi, adminApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
 async function purgeAppCache(): Promise<void> {
@@ -215,14 +215,21 @@ export default function AdminSettingsPage() {
       <div className="card p-6">
         <h2 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">🧹 Clear Cache</h2>
         <p className="text-sm text-gray-500 mb-4 max-w-xl">
-          Not seeing the latest deploy? This removes the app's cached files and service worker on this device, then reloads the site fresh from Vercel.
+          Not seeing the latest deploy? This purges Vercel's CDN cache for the site, removes the app's cached files and service worker on this device, then reloads fresh.
         </p>
         <button
           onClick={async () => {
             setPurging(true);
             try {
+              try {
+                await adminApi.purgeCache();
+                toast.success('Vercel CDN cache purged');
+              } catch (e) {
+                const msg = (e as { response?: { data?: { message?: string } } }).response?.data?.message;
+                toast.error(msg || 'Vercel CDN purge failed — clearing this device only');
+              }
               await purgeAppCache();
-              toast.success('Cache cleared — reloading…');
+              toast.success('Device cache cleared — reloading…');
               setTimeout(() => window.location.reload(), 600);
             } catch {
               toast.error('Failed to clear cache');

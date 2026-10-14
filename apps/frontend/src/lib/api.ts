@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
@@ -74,6 +74,7 @@ export const settingsApi = {
 export const adminApi = {
   getWhatsAppMessage: () => api.get('/admin/whatsapp-message'),
   getFridayMenuImage: () => api.get('/admin/friday-menu-image'),
+  purgeCache: () => api.post('/admin/purge-cache'),
 };
 
 // Upload
