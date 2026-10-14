@@ -2,9 +2,11 @@
 import { motion } from 'framer-motion';
 import { Save, RefreshCw, Trash2, Loader2, CheckCircle2 } from 'lucide-react';
 import { settingsApi, authApi, adminApi } from '../../lib/api';
+import { clearDisposableLocalData } from '../../lib/appUpdates';
 import toast from 'react-hot-toast';
 
 async function purgeAppCache(): Promise<void> {
+  clearDisposableLocalData();
   // Remove service workers (PWA) and every Cache Storage entry, then the caller reloads fresh from the server.
   if ('serviceWorker' in navigator) {
     const regs = await navigator.serviceWorker.getRegistrations();
