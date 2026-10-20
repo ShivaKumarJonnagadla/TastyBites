@@ -6,6 +6,7 @@ import {
   DELIVERY_LOCATIONS,
   FridayDish,
   FridayMenuResult,
+  FRIDAY_ORDER_STORAGE_KEY,
   applySavedFridayOrder,
   downloadFridayMenu,
   generateFridayMenuImage,
@@ -24,7 +25,13 @@ export default function AdminPromotionsPage() {
   const generateWhatsApp = async () => {
     setLoadingWA(true);
     try {
-      const res = await adminApi.getWhatsAppMessage();
+      let order = '';
+      try { order = (JSON.parse(localStorage.getItem(FRIDAY_ORDER_STORAGE_KEY) || '[]') as string[]).join(','); } catch { /* ignore */ }
+      const res = await adminApi.getWhatsAppMessage({ order, locationId, deliveryDateTime });
+      if (!res.data.data.dishCount) {
+        toast.error('No available dishes are enabled for the Friday menu');
+        return;
+      }
       setWhatsapp(res.data.data.message);
       toast.success('WhatsApp message generated!');
     } catch {
@@ -95,7 +102,7 @@ export default function AdminPromotionsPage() {
             </div>
             <div>
               <h2 className="font-semibold text-gray-900">WhatsApp Promotion</h2>
-              <p className="text-xs text-gray-500">Auto-generate promotional message</p>
+              <p className="text-xs text-gray-500">Friday menu message, ready to paste into WhatsApp</p>
             </div>
           </div>
 

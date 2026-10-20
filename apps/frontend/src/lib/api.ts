@@ -74,7 +74,7 @@ export const settingsApi = {
 
 // Admin
 export const adminApi = {
-  getWhatsAppMessage: () => api.get('/admin/whatsapp-message'),
+  getWhatsAppMessage: (params?: Record<string, string>) => api.get('/admin/whatsapp-message', { params }),
   getFridayMenuImage: () => api.get('/admin/friday-menu-image'),
   purgeCache: () => api.post('/admin/purge-cache', undefined, { timeout: 4000 }),
 };
