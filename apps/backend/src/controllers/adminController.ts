@@ -12,13 +12,18 @@ function ordinal(n: number): string {
   return `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] || 'th'}`;
 }
 
-/** Upcoming Friday (today if it is Friday) in Swedish time, as a plain y/m/d. */
-function upcomingFridayStockholm(): { y: number; m: number; d: number } {
+/** Midnight UTC of today's calendar date in Swedish time (for comparing plain dates). */
+function stockholmTodayUtc(): number {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Stockholm', year: 'numeric', month: '2-digit', day: '2-digit',
   }).formatToParts(new Date());
   const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
-  const date = new Date(Date.UTC(get('year'), get('month') - 1, get('day')));
+  return Date.UTC(get('year'), get('month') - 1, get('day'));
+}
+
+/** Upcoming Friday (today if it is Friday) in Swedish time, as a plain y/m/d. */
+function upcomingFridayStockholm(): { y: number; m: number; d: number } {
+  const date = new Date(stockholmTodayUtc());
   date.setUTCDate(date.getUTCDate() + ((5 - date.getUTCDay() + 7) % 7));
   return { y: date.getUTCFullYear(), m: date.getUTCMonth() + 1, d: date.getUTCDate() };
 }
@@ -45,9 +50,12 @@ export async function generateWhatsAppMessage(req: Request, res: Response, next:
     // Delivery date/time from the page (YYYY-MM-DDTHH:mm), else upcoming Friday at 17:00
     const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(String(req.query.deliveryDateTime || ''));
     const fri = upcomingFridayStockholm();
-    const y = match ? Number(match[1]) : fri.y;
-    const m = match ? Number(match[2]) : fri.m;
-    const d = match ? Number(match[3]) : fri.d;
+    // A date that has already passed (e.g. a page left open since last week) is replaced by the upcoming Friday
+    const isPast = match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) < stockholmTodayUtc() : false;
+    const useGiven = !!match && !isPast;
+    const y = useGiven ? Number(match![1]) : fri.y;
+    const m = useGiven ? Number(match![2]) : fri.m;
+    const d = useGiven ? Number(match![3]) : fri.d;
     const time = match ? match[4] : '17:00';
     const day = new Date(Date.UTC(y, m - 1, d));
     const weekday = day.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'UTC' });

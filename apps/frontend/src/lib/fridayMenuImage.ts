@@ -47,6 +47,19 @@ export function upcomingFridayDatetimeLocal(): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T17:00`;
 }
 
+/**
+ * Guards against a stale date (e.g. the admin page was left open since last week):
+ * a missing or already-passed date becomes the upcoming Friday, keeping the chosen time.
+ */
+export function resolveDeliveryDateTime(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}:\d{2})/.exec(value || '');
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  if (match && `${match[1]}-${match[2]}-${match[3]}` >= todayKey) return value;
+  const fri = upcomingFridayDatetimeLocal();
+  return match ? `${fri.slice(0, 10)}T${match[4]}` : fri;
+}
+
 /** "Friday, 9 October 2026" */
 export function formatFridayDate(d: Date): string {
   const weekday = d.toLocaleDateString('en-GB', { weekday: 'long' });
@@ -155,7 +168,8 @@ export interface FridayMenuResult {
 }
 
 export async function generateFridayMenuImage(opts: FridayMenuOptions): Promise<FridayMenuResult> {
-  const { dishes, locationId, deliveryDateTime } = opts;
+  const { dishes, locationId } = opts;
+  const deliveryDateTime = resolveDeliveryDateTime(opts.deliveryDateTime);
   const loc = DELIVERY_LOCATIONS.find((l) => l.id === locationId) || DELIVERY_LOCATIONS[0];
   const deliveryDate = deliveryDateTime ? new Date(deliveryDateTime) : upcomingFriday();
   const deliveryTime = formatDeliveryTime(deliveryDateTime || upcomingFridayDatetimeLocal());

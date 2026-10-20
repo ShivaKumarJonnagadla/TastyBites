@@ -10,6 +10,7 @@ import {
   applySavedFridayOrder,
   downloadFridayMenu,
   generateFridayMenuImage,
+  resolveDeliveryDateTime,
   upcomingFridayDatetimeLocal,
 } from '../../lib/fridayMenuImage';
 import toast from 'react-hot-toast';
@@ -22,12 +23,19 @@ export default function AdminPromotionsPage() {
   const [locationId, setLocationId] = useState(DELIVERY_LOCATIONS[0].id);
   const [deliveryDateTime, setDeliveryDateTime] = useState(upcomingFridayDatetimeLocal);
 
+  // Never use a stale date (page left open since an earlier week): fall back to the upcoming Friday and show it in the field
+  const currentDeliveryDateTime = () => {
+    const when = resolveDeliveryDateTime(deliveryDateTime);
+    if (when !== deliveryDateTime) setDeliveryDateTime(when);
+    return when;
+  };
+
   const generateWhatsApp = async () => {
     setLoadingWA(true);
     try {
       let order = '';
       try { order = (JSON.parse(localStorage.getItem(FRIDAY_ORDER_STORAGE_KEY) || '[]') as string[]).join(','); } catch { /* ignore */ }
-      const res = await adminApi.getWhatsAppMessage({ order, locationId, deliveryDateTime });
+      const res = await adminApi.getWhatsAppMessage({ order, locationId, deliveryDateTime: currentDeliveryDateTime() });
       if (!res.data.data.dishCount) {
         toast.error('No available dishes are enabled for the Friday menu');
         return;
@@ -50,7 +58,7 @@ export default function AdminPromotionsPage() {
         toast.error('No available dishes are enabled for the Friday menu');
         return;
       }
-      setFridayImage(await generateFridayMenuImage({ dishes, locationId, deliveryDateTime }));
+      setFridayImage(await generateFridayMenuImage({ dishes, locationId, deliveryDateTime: currentDeliveryDateTime() }));
       toast.success('Friday menu image generated!');
     } catch {
       toast.error('Failed to generate Friday menu image');
