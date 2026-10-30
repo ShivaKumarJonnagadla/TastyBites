@@ -5,6 +5,7 @@ import { ArrowRight, Star, ChevronDown, Phone, Clock, MapPin, MessageCircle, Inf
 import { useTranslation } from 'react-i18next';
 import { dishApi } from '../lib/api';
 import { useMenuVersion } from '../lib/menuVersion';
+import { isFridayOrderingOpen } from '../lib/fridayOrderCutoff';
 import MenuSection from '../components/menu/MenuSection';
 import { GREETING_MESSAGES, MARKETING_MESSAGES, MARKETING_MESSAGES_SV } from '../lib/constants';
 
@@ -87,6 +88,7 @@ export default function HomePage() {
   const [allDishes, setAllDishes] = useState<Dish[]>([]);
   const [fridayDishes, setFridayDishes] = useState<Dish[]>([]);
   const [loading, setLoading] = useState(true);
+  const fridayOpen = isFridayOrderingOpen();
   const [greeting, setGreeting] = useState('');
   const [marketingIdx, setMarketingIdx] = useState(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -353,12 +355,24 @@ export default function HomePage() {
 
       {/* Friday Special */}
       <div id="friday-menu" className="bg-gradient-to-b from-pink-100 to-pink-50">
+        {!fridayOpen && (
+          <div className="max-w-2xl mx-auto px-4 pt-8">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 items-start">
+              <Clock size={20} className="text-amber-600 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-800">{t('menu.fridayClosedTitle')}</p>
+                <p className="text-sm text-amber-700 mt-1">{t('menu.fridayClosedBody')}</p>
+              </div>
+            </div>
+          </div>
+        )}
         <MenuSection
           title={t('menu.friday')}
           subtitle={t('home.fridayMenu.subtitle')}
           dishes={fridayDishes}
           isLoading={loading}
           emoji="🎉"
+          readOnly={!fridayOpen}
         />
       </div>
 
