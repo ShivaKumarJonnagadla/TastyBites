@@ -105,7 +105,10 @@
     "pageTitle": "Vår Meny",
     "pageSubtitle": "Nytillagad med äkta indiska kryddor",
     "allDishesSubtitle": "Tillgänglig vilken dag som helst — beställ 1 dag i förväg · min. 2 portioner per rätt",
-    "fridaySubtitle": "Specialrätter tillgängliga varje fredag"
+    "fridaySubtitle": "Specialrätter tillgängliga varje fredag",
+    "fridayClosedTitle": "Fredagsbeställningar stängda",
+    "fridayClosedBody": "Tack för ditt intresse! Fredagsbeställningar kan bara läggas tisdag–torsdag före kl. 17:00 CET. Kom tillbaka på tisdag när den nya menyn annonseras på WhatsApp.",
+    "fridayClosedShort": "Tack! Fredagsbeställningar accepteras inte efter torsdag kl. 17:00 CET."
   },
   "cart": {
     "title": "Din Varukorg",

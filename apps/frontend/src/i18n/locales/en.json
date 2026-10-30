@@ -106,7 +106,10 @@
     "pageTitle": "Our Menu",
     "pageSubtitle": "Freshly prepared with authentic Indian spices",
     "allDishesSubtitle": "Available any day — order 1 day in advance · min. 2 portions per dish",
-    "fridaySubtitle": "Special dishes available every Friday"
+    "fridaySubtitle": "Special dishes available every Friday",
+    "fridayClosedTitle": "Friday Orders Closed",
+    "fridayClosedBody": "Thank you for your interest! Friday orders can only be placed Tuesday–Thursday before 5:00 PM CET. Check back on Tuesday when the new menu is announced on WhatsApp.",
+    "fridayClosedShort": "Thank you! Friday orders are not accepted after Thursday 5:00 PM CET."
   },
   "cart": {
     "title": "Your Cart",
