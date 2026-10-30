@@ -50,17 +50,23 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
     // Get active pickup message
     const pickupMsg = await prisma.pickupMessage.findFirst({ where: { isActive: true } });
 
-    // Check if same customer ordered today (merge orders)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Check if same customer ordered this week (Mon–Sun) — merge if so, new order if different week.
+    // Uses UTC week boundaries; Stockholm is UTC+1/+2 so the off-by-1h edge case at midnight is acceptable.
+    const now = new Date();
+    const utcDay = now.getUTCDay(); // 0=Sun, 1=Mon … 6=Sat
+    const daysFromMonday = utcDay === 0 ? 6 : utcDay - 1;
+    const startOfWeek = new Date(now);
+    startOfWeek.setUTCDate(now.getUTCDate() - daysFromMonday);
+    startOfWeek.setUTCHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 7);
 
     const existingOrder = await prisma.order.findFirst({
       where: {
         mobileNumber,
-        orderDate: { gte: today, lt: tomorrow },
+        orderDate: { gte: startOfWeek, lt: endOfWeek },
         status: { in: ['PENDING', 'PREPARING'] },
+        archivedAt: null,
       },
       include: { orderItems: true },
     });
