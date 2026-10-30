@@ -2,9 +2,11 @@
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
+import { Clock } from 'lucide-react';
 import { dishApi } from '../lib/api';
 import { useMenuVersion } from '../lib/menuVersion';
 import MenuSection from '../components/menu/MenuSection';
+import { isFridayOrderingOpen } from '../lib/fridayOrderCutoff';
 
 interface Dish {
   id: string;
@@ -65,6 +67,7 @@ export default function MenuPage() {
     { id: 'friday', label: t('menu.friday'), emoji: '🎉' },
   ];
 
+  const fridayOpen = isFridayOrderingOpen();
   const filtered = activeTab === 'all' ? allDishes : fridayDishes;
 
   return (
@@ -114,12 +117,35 @@ export default function MenuPage() {
         </div>
       </div>
 
+      {/* Friday orders closed banner */}
+      {activeTab === 'friday' && !fridayOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"
+        >
+          <div className="flex items-start gap-4 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+              <Clock size={20} className="text-amber-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-amber-800 text-base">
+                {t('menu.fridayClosedTitle')}
+              </p>
+              <p className="text-amber-700 text-sm mt-0.5 leading-relaxed">
+                {t('menu.fridayClosedBody')}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <MenuSection
         title={tabs.find((t) => t.id === activeTab)?.label || 'Menu'}
         dishes={filtered}
         isLoading={loading}
         emoji={tabs.find((t) => t.id === activeTab)?.emoji || '🍛'}
-        readOnly={activeTab !== 'friday'}
+        readOnly={activeTab !== 'friday' || !fridayOpen}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import ExcelJS from 'exceljs';
 import prisma from '../utils/prisma';
 import { AppError } from '../middleware/errorHandler';
 import { sendOrderConfirmationEmail } from '../services/emailService';
+import { isFridayOrderingOpen } from '../utils/fridayOrderCutoff';
 
 export async function createOrder(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -18,6 +19,15 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
 
     if (dishes.length !== uniqueDishIds.length) {
       return next(new AppError('One or more dishes are unavailable', 400));
+    }
+
+    // Block Friday orders after Thursday 17:00 CET/CEST
+    const hasFridayItems = dishes.some((d) => d.menuType === 'FRIDAY' || d.menuType === 'BOTH');
+    if (hasFridayItems && !isFridayOrderingOpen()) {
+      return next(new AppError(
+        'Thank you! Friday orders are not accepted after Thursday 5:00 PM CET. Orders open again on Tuesday.',
+        400
+      ));
     }
 
     // Calculate total using actual prices
