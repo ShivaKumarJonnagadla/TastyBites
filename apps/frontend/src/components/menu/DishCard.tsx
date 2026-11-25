@@ -120,7 +120,7 @@ export default function DishCard({ dish, readOnly = false }: Props) {
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={showSpicePicker ? {} : { y: -4 }}
       transition={{ duration: 0.3 }}
-      className={`card group flex flex-col${showSpicePicker ? ' pointer-events-none' : ''}`}
+      className="card group flex flex-col"
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-video bg-gray-100 flex-shrink-0">
