@@ -9,6 +9,7 @@ export interface FridayDish {
   price: number | string;
   imageUrl: string | null;
   spiceLevel: string;
+  availableSpiceLevels?: string[];
   isVegetarian: boolean;
   category?: string;
 }
@@ -107,6 +108,13 @@ const spiceLabel = (level: string) => {
   return '🌶️🌶️🌶️ Extra Hot';
 };
 
+const spiceOptions = (d: FridayDish) => {
+  const levels = d.availableSpiceLevels && d.availableSpiceLevels.length > 0
+    ? d.availableSpiceLevels
+    : [d.spiceLevel];
+  return levels.map(spiceLabel).join(' · ');
+};
+
 const MENU_CSS = `
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a1a;}
@@ -196,7 +204,7 @@ export async function generateFridayMenuImage(opts: FridayMenuOptions): Promise<
           <p class="dish-meta">
             <span class="dish-price">SEK ${Number(d.price)}</span>
             <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
-            <span class="dish-spice">${spiceLabel(d.spiceLevel)}</span>
+            <span class="dish-spice">${spiceOptions(d)}</span>
             <span class="dish-dot">&nbsp;&middot;&nbsp;</span>
             <span class="${d.isVegetarian ? 'dish-veg' : 'dish-nonveg'}">${d.isVegetarian ? '🌿 Veg' : '🍗 Non-Veg'}</span>
           </p>
