@@ -114,13 +114,11 @@ export default function DishCard({ dish, readOnly = false }: Props) {
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      whileHover={showSpicePicker ? {} : { y: -4 }}
       transition={{ duration: 0.3 }}
-      className="card group flex flex-col"
+      className="card group flex flex-col hover:-translate-y-1 transition-transform duration-300"
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-video bg-gray-100 flex-shrink-0">
