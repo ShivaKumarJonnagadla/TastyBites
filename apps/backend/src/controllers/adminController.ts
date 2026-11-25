@@ -78,6 +78,8 @@ ${list}
 📍 Pickup/Delivery: ${location}
 🕔 ${weekday} at ${time}
 
+🌐 Website: https://tastybites-almhult.vercel.app/
+
 ❤️ Freshly prepared with love! Thank you for supporting Tasty Bites! 🙏😊`;
 
     res.json({ success: true, data: { message, dishCount: dishes.length } });
